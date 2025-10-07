@@ -95,21 +95,22 @@
   }
 
   /* Bottombar */
-#bottombar{
-    position:absolute;
-    bottom:0;
-    left:0;
-    right:0;
-    height:80px;
-    background: rgba(20,20,30,0.95); /* más opaco */
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:10px 18px;
-    overflow-x:auto;
-    border-top:1px solid rgba(255,255,255,0.05);
-    z-index:1001; /* asegurar que esté encima de overlays */
+#bottombar {
+    position: fixed;       /* antes era absolute */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: rgba(20,20,30,0.95); /* fondo visible */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    overflow-x: auto;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    z-index: 1100;         /* superior al overlay (900) y rainbow square (1001) */
 }
+
   .brainrot{
     min-width:64px;
     height:64px;
