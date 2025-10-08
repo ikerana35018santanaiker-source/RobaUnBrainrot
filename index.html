@@ -248,40 +248,50 @@ const freeMoneyText=document.getElementById('freeMoneyText');
 function updateMoney(){moneyText.textContent=`💰 Dinero: ${formatMoney(playerData.money)}`;}
 
 function addBrainrotToBar(brainrot){
-  const div=document.createElement('div');
-  div.className='brainrot';
-  div.textContent=brainrot.name;
+  const div = document.createElement('div');
+  div.className = 'brainrot';
+  div.style.position = 'relative';
+  div.style.flexDirection = 'column'; // por si quieres poner botón arriba
 
-  const sellBtn=document.createElement('button');
-  sellBtn.textContent='Vender';
-  sellBtn.style.position='absolute';
-  sellBtn.style.top='-36px';
-  sellBtn.style.left='50%';
-  sellBtn.style.transform='translateX(-50%)';
-  sellBtn.style.padding='6px 12px';
-  sellBtn.style.background='linear-gradient(90deg,#ff3d3d,#ff6b6b)';
-  sellBtn.style.color='#fff';
-  sellBtn.style.border='none';
-  sellBtn.style.borderRadius='8px';
-  sellBtn.style.display='none';
-  sellBtn.style.cursor='pointer';
-  sellBtn.style.fontWeight='bold';
-  sellBtn.style.boxShadow='0 0 10px rgba(0,0,0,0.4)';
+  // Imagen
+  const img = document.createElement('img');
+  img.src = brainrot.image || 'https://via.placeholder.com/64';
+  img.style.width = '48px';
+  img.style.height = '48px';
+  img.style.borderRadius = '8px';
+  div.appendChild(img);
+
+  // Botón de vender
+  const sellBtn = document.createElement('button');
+  sellBtn.textContent = 'Vender';
+  sellBtn.style.position = 'absolute';
+  sellBtn.style.top = '-36px';
+  sellBtn.style.left = '50%';
+  sellBtn.style.transform = 'translateX(-50%)';
+  sellBtn.style.padding = '6px 12px';
+  sellBtn.style.background = 'linear-gradient(90deg,#ff3d3d,#ff6b6b)';
+  sellBtn.style.color = '#fff';
+  sellBtn.style.border = 'none';
+  sellBtn.style.borderRadius = '8px';
+  sellBtn.style.display = 'none';
+  sellBtn.style.cursor = 'pointer';
+  sellBtn.style.fontWeight = 'bold';
+  sellBtn.style.boxShadow = '0 0 10px rgba(0,0,0,0.4)';
   div.appendChild(sellBtn);
 
-  div.addEventListener('click',()=>{
-    document.querySelectorAll('.brainrot button').forEach(b=>b.style.display='none');
-    sellBtn.style.display='block';
+  div.addEventListener('click', ()=>{
+    document.querySelectorAll('.brainrot button').forEach(b => b.style.display = 'none');
+    sellBtn.style.display = 'block';
   });
 
-  sellBtn.addEventListener('click',(e)=>{
+  sellBtn.addEventListener('click', e => {
     e.stopPropagation();
-    const refund=brainrot.price===0?5:Math.floor(brainrot.price/2);
-    playerData.money+=refund;
-    const idx=playerData.brainrots.indexOf(brainrot);
-    if(idx>-1)playerData.brainrots.splice(idx,1);
+    const refund = brainrot.price === 0 ? 5 : Math.floor(brainrot.price/2);
+    playerData.money += refund;
+    const idx = playerData.brainrots.indexOf(brainrot);
+    if(idx > -1) playerData.brainrots.splice(idx,1);
     div.remove();
-    updateMoney();saveData();
+    updateMoney(); saveData();
   });
 
   bottombar.appendChild(div);
