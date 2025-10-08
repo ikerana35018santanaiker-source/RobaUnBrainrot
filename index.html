@@ -398,51 +398,60 @@ function createScrollRows(){
 
 createScrollRows();
 
-/* Añadir brainrot al bottombar -- recibe objeto con id,name,price,income */
-function addBrainrotToBar(br){
-  const div = document.createElement('div');
-  div.className = 'brainrot';
-  div.textContent = br.name;
-  div.dataset.id = br.id;
+function addBrainrotToBar(brainrot){
+    const div = document.createElement('div');
+    div.className = 'brainrot';
+    div.textContent = brainrot.name;
 
-  // botón vender
-  const sellBtn = document.createElement('button');
-  sellBtn.className = 'sell-btn';
-  sellBtn.textContent = 'VENDER';
-  div.appendChild(sellBtn);
+    // Crear botón de vender
+    const sellBtn = document.createElement('button');
+    sellBtn.textContent = 'Vender';
+    sellBtn.style.position = 'absolute';
+    sellBtn.style.bottom = '70px';
+    sellBtn.style.left = '50%';
+    sellBtn.style.transform = 'translateX(-50%)';
+    sellBtn.style.background = '#e33';
+    sellBtn.style.color = '#fff';
+    sellBtn.style.border = 'none';
+    sellBtn.style.padding = '5px 10px';
+    sellBtn.style.borderRadius = '6px';
+    sellBtn.style.cursor = 'pointer';
+    sellBtn.style.display = 'none';
+    sellBtn.style.zIndex = '1201';
 
-  // click en la brainrot: toggle mostrar boton vender
-  div.addEventListener('click', (e) => {
-    e.stopPropagation();
-    // ocultar cualquier otro sell-btn visible
-    document.querySelectorAll('.sell-btn.show').forEach(b=>b.classList.remove('show'));
-    sellBtn.classList.toggle('show');
-  });
+    div.appendChild(sellBtn);
+    bottombar.appendChild(div);
 
-  // vender
-  sellBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    // encontrar index por id
-    const id = div.dataset.id;
-    const idx = playerData.brainrots.findIndex(x => x.id === id);
-    if(idx === -1) return;
-    const item = playerData.brainrots[idx];
-    const refund = (item.price === 0) ? 2 : Math.floor(item.price/2);
-    playerData.money += refund;
-    // eliminar del inventario
-    playerData.brainrots.splice(idx,1);
-    // remover DOM
-    div.remove();
-    updateMoney();
-    saveData();
-  });
+    // Mostrar / ocultar botón al hacer clic
+    div.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sellBtn.style.display = sellBtn.style.display === 'block' ? 'none' : 'block';
+    });
 
-  bottombar.appendChild(div);
+    // Acción al vender
+    sellBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // calcular reembolso
+        const refund = brainrot.price === 0 ? 5 : Math.floor(brainrot.price / 2);
+        playerData.money += refund;
 
-  // tween de aparición simple
-  div.style.transform = 'translateY(-120px)';
-  setTimeout(()=>{ div.style.transition = 'transform .45s cubic-bezier(.2,.9,.2,1)'; div.style.transform = 'translateY(0)'; }, 20);
-}
+        // quitar el brainrot del array del jugador
+        const index = playerData.brainrots.indexOf(brainrot);
+        if(index !== -1) playerData.brainrots.splice(index, 1);
+
+        // eliminar del DOM
+        div.remove();
+
+        updateMoney();
+        localStorage.setItem('playerData', JSON.stringify(playerData));
+    });
+
+    // Animación de entrada
+    div.style.transform = 'translateY(-200px)';
+    setTimeout(() => div.style.transition = 'transform 0.5s', 10);
+    setTimeout(() => div.style.transform = 'translateY(0)', 20);
+
+
 
 /* Reconstruir bottombar (on load) */
 function renderBottombarFromData(){
