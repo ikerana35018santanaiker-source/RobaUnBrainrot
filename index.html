@@ -398,58 +398,76 @@ function createScrollRows(){
 
 createScrollRows();
 
-function addBrainrotToBar(brainrot){
-    const div = document.createElement('div');
-    div.className = 'brainrot';
-    div.textContent = brainrot.name;
 
-    // Crear botón de vender
-    const sellBtn = document.createElement('button');
-    sellBtn.textContent = 'Vender';
-    sellBtn.style.position = 'absolute';
-    sellBtn.style.bottom = '70px';
-    sellBtn.style.left = '50%';
-    sellBtn.style.transform = 'translateX(-50%)';
-    sellBtn.style.background = '#e33';
-    sellBtn.style.color = '#fff';
-    sellBtn.style.border = 'none';
-    sellBtn.style.padding = '5px 10px';
-    sellBtn.style.borderRadius = '6px';
-    sellBtn.style.cursor = 'pointer';
-    sellBtn.style.display = 'none';
-    sellBtn.style.zIndex = '1201';
+  // === Acción de vender ===
+  function addBrainrotToBar(brainrot) {
+  const div = document.createElement('div');
+  div.className = 'brainrot';
+  div.textContent = brainrot.name;
+  div.style.position = 'relative'; // importante para posicionar el botón dentro
 
-    div.appendChild(sellBtn);
-    bottombar.appendChild(div);
+  // === Botón de vender ===
+  const sellBtn = document.createElement('button');
+  sellBtn.textContent = 'Vender';
+  sellBtn.style.position = 'absolute';
+  sellBtn.style.bottom = '70px'; // justo encima del bottombar
+  sellBtn.style.left = '50%';
+  sellBtn.style.transform = 'translateX(-50%)';
+  sellBtn.style.background = 'linear-gradient(90deg, #ff3d3d, #ff6b6b)';
+  sellBtn.style.color = '#fff';
+  sellBtn.style.border = 'none';
+  sellBtn.style.padding = '6px 12px';
+  sellBtn.style.borderRadius = '8px';
+  sellBtn.style.cursor = 'pointer';
+  sellBtn.style.display = 'none';
+  sellBtn.style.zIndex = '2000';
+  sellBtn.style.boxShadow = '0 0 10px rgba(0,0,0,0.4)';
+  sellBtn.style.fontWeight = 'bold';
+  sellBtn.style.transition = 'opacity 0.2s';
 
-    // Mostrar / ocultar botón al hacer clic
-    div.addEventListener('click', (e) => {
-        e.stopPropagation();
-        sellBtn.style.display = sellBtn.style.display === 'block' ? 'none' : 'block';
+  div.appendChild(sellBtn);
+  bottombar.appendChild(div);
+
+  // === Mostrar / ocultar el botón al hacer clic en el brainrot ===
+  div.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // Si hay otro botón abierto, ciérralo
+    document.querySelectorAll('.sell-btn-visible').forEach(btn => {
+      btn.classList.remove('sell-btn-visible');
+      btn.style.display = 'none';
     });
 
-    // Acción al vender
-    sellBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        // calcular reembolso
-        const refund = brainrot.price === 0 ? 5 : Math.floor(brainrot.price / 2);
-        playerData.money += refund;
+    if (sellBtn.style.display === 'none') {
+      sellBtn.style.display = 'block';
+      sellBtn.classList.add('sell-btn-visible');
+    } else {
+      sellBtn.style.display = 'none';
+      sellBtn.classList.remove('sell-btn-visible');
+    }
+  });
 
-        // quitar el brainrot del array del jugador
-        const index = playerData.brainrots.indexOf(brainrot);
-        if(index !== -1) playerData.brainrots.splice(index, 1);
+  // === Acción de vender ===
+  sellBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const refund = brainrot.price === 0 ? 5 : Math.floor(brainrot.price / 2);
+    playerData.money += refund;
 
-        // eliminar del DOM
-        div.remove();
+    // Eliminar del inventario
+    const index = playerData.brainrots.indexOf(brainrot);
+    if (index !== -1) playerData.brainrots.splice(index, 1);
 
-        updateMoney();
-        localStorage.setItem('playerData', JSON.stringify(playerData));
-    });
+    // Eliminar visualmente
+    div.remove();
+    updateMoney();
+    localStorage.setItem('playerData', JSON.stringify(playerData));
+  });
 
-    // Animación de entrada
-    div.style.transform = 'translateY(-200px)';
-    setTimeout(() => div.style.transition = 'transform 0.5s', 10);
-    setTimeout(() => div.style.transform = 'translateY(0)', 20);
+  // === Animación al aparecer ===
+  div.style.transform = 'translateY(-200px)';
+  setTimeout(() => div.style.transition = 'transform 0.5s', 10);
+  setTimeout(() => div.style.transform = 'translateY(0)', 20);
+}
+
 
 
 
