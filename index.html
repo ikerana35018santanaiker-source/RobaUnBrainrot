@@ -413,11 +413,14 @@ function placeSquare() {
         alert("Contraseña incorrecta ❌");
       }
 
-      // Reiniciar el cuadrado al centro sin importar si acertó o no
+      // Reiniciar el cuadrado al centro
       rainbowX = window.innerWidth / 2 - rainbowSquare.offsetWidth / 2;
       rainbowY = window.innerHeight / 2 - rainbowSquare.offsetHeight / 2;
       rainbowSquare.style.left = rainbowX + 'px';
       rainbowSquare.style.top = rainbowY + 'px';
+
+      // 🔹 Evitar que siga moviéndose: limpiar las teclas presionadas
+      pressed.clear();
     }
   }
 }
