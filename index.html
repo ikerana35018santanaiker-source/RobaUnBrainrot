@@ -338,31 +338,38 @@ function startGame(){loginDiv.style.display='none';renderBottombarFromData();upd
 loginBtn.onclick=()=>{if(!usernameInput.value)return;playerData.username=usernameInput.value;saveData();startGame();}
 if(localStorage.getItem('playerData')){playerData=JSON.parse(localStorage.getItem('playerData'));startGame();}
 
-// === Movimiento del cuadrado Rainbow (Zona Libre) ===
-const rainbow = document.getElementById("rainbowSquare");
 let rainbowX = window.innerWidth / 2;
 let rainbowY = window.innerHeight / 2;
+const moveStep = 28; // pixels por movimiento
 
-const step = 28;
-
-function placeSquare(){
-  rainbow.style.left = rainbowX + "px";
-  rainbow.style.top = rainbowY + "px";
+function placeSquare() {
+  // limitar dentro de la ventana
+  const maxX = window.innerWidth - rainbowSquare.offsetWidth;
+  const maxY = window.innerHeight - rainbowSquare.offsetHeight;
+  rainbowX = Math.max(0, Math.min(rainbowX, maxX));
+  rainbowY = Math.max(0, Math.min(rainbowY, maxY));
+  rainbowSquare.style.left = rainbowX + 'px';
+  rainbowSquare.style.top = rainbowY + 'px';
 }
 
-btnUp.addEventListener('click', ()=>{ rainbowY -= step; placeSquare(); });
-btnDown.addEventListener('click', ()=>{ rainbowY += step; placeSquare(); });
-btnLeft.addEventListener('click', ()=>{ rainbowX -= step; placeSquare(); });
-btnRight.addEventListener('click', ()=>{ rainbowX += step; placeSquare(); });
+// Botones
+btnUp.addEventListener('click', () => { rainbowY -= moveStep; placeSquare(); });
+btnDown.addEventListener('click', () => { rainbowY += moveStep; placeSquare(); });
+btnLeft.addEventListener('click', () => { rainbowX -= moveStep; placeSquare(); });
+btnRight.addEventListener('click', () => { rainbowX += moveStep; placeSquare(); });
 
-document.addEventListener("keydown", (e) => {
-  if(!mainArea.classList.contains('free-zone')) return;
+// Teclado WASD
+document.addEventListener('keydown', (e) => {
+  if (!mainArea.classList.contains('free-zone')) return;
   const k = e.key.toLowerCase();
-  if(k === "w") { rainbowY -= step; placeSquare(); }
-  if(k === "s") { rainbowY += step; placeSquare(); }
-  if(k === "a") { rainbowX -= step; placeSquare(); }
-  if(k === "d") { rainbowX += step; placeSquare(); }
+  if (k === 'w') { rainbowY -= moveStep; placeSquare(); }
+  if (k === 's') { rainbowY += moveStep; placeSquare(); }
+  if (k === 'a') { rainbowX -= moveStep; placeSquare(); }
+  if (k === 'd') { rainbowX += moveStep; placeSquare(); }
 });
+
+// inicializar posición
+placeSquare();
 
 </script>
 </body>
