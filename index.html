@@ -194,9 +194,14 @@ const brainrotsDisponibles = [
   {name:"Hackerini Ikerini",price:0,income:100,image:"https://www.imagar.com/wp-content/uploads/2020/11/analista_programador-scaled-1.jpg"},
   {name:"Lukili Luchini",price:500,income:1000,image:"https://www3.gobiernodecanarias.org/medusa/wiki/images/thumb/5/51/Lucha-Canaria.png/300px-Lucha-Canaria.png"},
   {name:"La Clase de 6º",price:1000000000,income:55000000,image:"https://portal.edu.gva.es/reinasofia/wp-content/uploads/sites/461/2020/09/19.png"},
+  {name:"Los Bros",price:1000000000,income:55000000,image:"https://static.wikia.nocookie.net/stealabr/images/5/53/BROOOOOOOO.png/revision/latest?cb=20250909152032"},
+  {name:"Futbolini Golini",price:500000,income:250000,image:"https://upload.wikimedia.org/wikipedia/commons/e/e7/Steaua_vs._CFR_Cluj_in_2010.jpg"},  
   {name:"FoxitoJilitos",price:0,income:500,image:"https://fv5-5.files.fm/thumb_show.php?i=w5ca3csxt2&view&v=1&PHPSESSID=6c2f56d612eb5427c75cbd49d6d69d2b569d4e7c"},
   {name:"Oscarini Bicicletini",price:0,income:500,image:"https://fv5-3.files.fm/thumb_show.php?i=w73ckuup28&view&v=1&PHPSESSID=6c2f56d612eb5427c75cbd49d6d69d2b569d4e7c"},
   {name:"Baloncestini Noahsini",price:2000,income:200,image:"https://png.pngtree.com/png-clipart/20240824/original/pngtree-illustration-of-a-basketball-player-jump-shotting-hand-drawn-style-vector-png-image_15840318.png"},
+  {name:"Los Bros",price:1000000000,income:55000000,image:"https://static.wikia.nocookie.net/stealabr/images/5/53/BROOOOOOOO.png/revision/latest?cb=20250909152032"},
+  {name:"El Abramini",price:125,income:150000,image:"https://www.shutterstock.com/image-illustration/image-not-found-grayscale-photo-260nw-2425909941.jpg"},
+  {name:"Brainrot De Prueba Tonto",price:125,income:150000,image:""},
   {name:"El Lukinelli",price:1000000,income:500000,image:"https://fv5-5.files.fm/thumb_show.php?i=5gxgtb65zs&view&v=1&PHPSESSID=6c2f56d612eb5427c75cbd49d6d69d2b569d4e7c"},
 ];
 
@@ -288,8 +293,7 @@ function createScrollText(){
       text-align:center;
       padding:4px;
     ">
-      <img src="${proto.image || 'https://via.placeholder.com/80'}"
-           alt="${proto.name}"
+      <img src="${proto.image || 'https://www.shutterstock.com/image-illustration/image-not-found-grayscale-photo-260nw-2425909941.jpg'}"
            style="width:128px; height:128px; border-radius:10px; margin-bottom:6px; object-fit:cover; box-shadow:0 0 8px rgba(0,0,0,0.4);">
       <div style="font-weight:700; margin-bottom:4px;">${proto.name}</div>
       <div style="font-size:13px; opacity:0.9;">Comprar (${formatMoney(proto.price)})</div>
