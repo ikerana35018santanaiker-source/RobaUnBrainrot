@@ -143,16 +143,16 @@
   .sell-btn.show{ display:block }
 
   /* Money display */
-  #money{
-    position:absolute;
-    left:14px;
-    bottom:96px;
-    font-weight:800;
-    background:var(--glass);
-    padding:8px 12px;
-    border-radius:10px;
-    border:1px solid rgba(255,255,255,0.03);
-  }
+  #money {
+    position: fixed; /* así no se ve afectado por otros contenedores */
+    bottom: 90px; /* lo movemos un poco arriba del bottombar */
+    left: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffd700; /* color dorado para destacar 💰 */
+    text-shadow: 0 0 8px #000;
+    z-index: 1200; /* más alto que el bottombar (1100) y overlay (900) */
+}
 
   /* Zone buttons (left & right middle) */
   #zonaLibreBtn, #zonaNormalBtn{
