@@ -62,14 +62,14 @@
   }
 
   #scroll-area {
-    position: fixed; /* antes era absolute */
+    position: fixed;
     top: 50%;
     left: 0;
     width: 100%;
     height: 200px;
     overflow: visible;
     pointer-events: none;
-    z-index: 1000; /* aseguramos que se vea encima de la zona libre */
+    z-index: 1000;
 }
   .scroll-row{ position:absolute; left:0; right:0; height:40px; display:block; }
   .scroll-text{
@@ -91,11 +91,10 @@
     gap: 12px;
     padding: 10px 18px;
     overflow-x: auto;
-    overflow: visible; /* 👈 AÑADE ESTO */
+    overflow: visible;
     border-top: 1px solid rgba(255,255,255,0.05);
     z-index: 1100;
 }
-
 
   .brainrot{
     min-width:64px; height:64px;
@@ -192,16 +191,17 @@
 
 <script>
 const brainrotsDisponibles = [
-  {name:"Hackerini Ikerini",price:0,income:100},
-  {name:"Brainrot B",price:500,income:1000},
-  {name:"Baloncestini Noahsini",price:2000,income:200},
-  {name:"El Lukinelli",price:1000000,income:500000},
+  {name:"Hackerini Ikerini",price:0,income:100,image:"https://via.placeholder.com/80?text=Ikerini"},
+  {name:"Brainrot B",price:500,income:1000,image:"https://via.placeholder.com/80?text=B"},
+  {name:"Baloncestini Noahsini",price:2000,income:2000,image:"https://via.placeholder.com/80?text=N"},
+  {name:"El Lukinelli",price:1000000,income:500000,image:"https://www.wesco.com/content/dam/wesco/assets/logos/brands/algo-logo_300x175.png"},
 ];
 
 let playerData={username:'',money:0,brainrots:[]};
 
 function formatMoney(n){
   n=Math.floor(n);
+  if(n>=1e9)return(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';
   if(n>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'M';
   if(n>=1e3)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'k';
   return String(n);
@@ -276,7 +276,22 @@ function createScrollText(){
   const proto=brainrotsDisponibles[Math.floor(Math.random()*brainrotsDisponibles.length)];
   const div=document.createElement('div');
   div.className='scroll-text';
-  div.textContent=`${proto.name} - Comprar (${formatMoney(proto.price)})`;
+  div.innerHTML = `
+    <div style="
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:4px;
+    ">
+      <img src="${proto.image || 'https://via.placeholder.com/80'}"
+           alt="${proto.name}"
+           style="width:64px; height:64px; border-radius:10px; margin-bottom:6px; object-fit:cover; box-shadow:0 0 8px rgba(0,0,0,0.4);">
+      <div style="font-weight:700; margin-bottom:4px;">${proto.name}</div>
+      <div style="font-size:13px; opacity:0.9;">Comprar (${formatMoney(proto.price)})</div>
+    </div>
+  `;
   div.style.left=(scrollArea.clientWidth+100)+'px';
   div.style.top=Math.floor(Math.random()*200)+'px';
   scrollArea.appendChild(div);
@@ -315,40 +330,33 @@ zonaNormalBtn.onclick=()=>{mainArea.classList.remove('free-zone');zoneOverlay.st
 function startGame(){loginDiv.style.display='none';renderBottombarFromData();updateMoney();}
 loginBtn.onclick=()=>{if(!usernameInput.value)return;playerData.username=usernameInput.value;saveData();startGame();}
 if(localStorage.getItem('playerData')){playerData=JSON.parse(localStorage.getItem('playerData'));startGame();}
-  // === Movimiento del cuadrado Rainbow (Zona Libre) ===
+
+// === Movimiento del cuadrado Rainbow (Zona Libre) ===
 const rainbow = document.getElementById("rainbowSquare");
 let rainbowX = window.innerWidth / 2;
 let rainbowY = window.innerHeight / 2;
 
+const step = 28;
 
-// Mueve el cuadrado según dirección
-function moveRainbow(dx, dy) {
-  rainbowX += dx * moveStep;
-  rainbowY += dy * moveStep;
+function placeSquare(){
   rainbow.style.left = rainbowX + "px";
   rainbow.style.top = rainbowY + "px";
 }
 
-  // on-screen buttons (mover cuadrado Rainbow)
-const step = 28;
+btnUp.addEventListener('click', ()=>{ rainbowY -= step; placeSquare(); });
+btnDown.addEventListener('click', ()=>{ rainbowY += step; placeSquare(); });
+btnLeft.addEventListener('click', ()=>{ rainbowX -= step; placeSquare(); });
+btnRight.addEventListener('click', ()=>{ rainbowX += step; placeSquare(); });
 
-btnUp.addEventListener('click', ()=>{ squareY -= step; placeSquare(); });
-btnDown.addEventListener('click', ()=>{ squareY += step; placeSquare(); });
-btnLeft.addEventListener('click', ()=>{ squareX -= step; placeSquare(); });
-btnRight.addEventListener('click', ()=>{ squareX += step; placeSquare(); });
-
-// Controles con teclado (WASD)
 document.addEventListener("keydown", (e) => {
-  if(!mainArea.classList.contains('free-zone')) return; // solo zona libre
+  if(!mainArea.classList.contains('free-zone')) return;
   const k = e.key.toLowerCase();
-  if(k === "w") { squareY -= step; placeSquare(); }
-  if(k === "s") { squareY += step; placeSquare(); }
-  if(k === "a") { squareX -= step; placeSquare(); }
-  if(k === "d") { squareX += step; placeSquare(); }
+  if(k === "w") { rainbowY -= step; placeSquare(); }
+  if(k === "s") { rainbowY += step; placeSquare(); }
+  if(k === "a") { rainbowX -= step; placeSquare(); }
+  if(k === "d") { rainbowX += step; placeSquare(); }
 });
-
 
 </script>
 </body>
 </html>
-
