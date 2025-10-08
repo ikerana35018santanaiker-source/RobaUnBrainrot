@@ -23,7 +23,6 @@
     color:var(--text);
     overflow:hidden;
   }
-
   #login{
     position:fixed;
     inset:0;
@@ -70,7 +69,7 @@
     overflow: visible;
     pointer-events: none;
     z-index: 1000;
-}
+  }
   .scroll-row{ position:absolute; left:0; right:0; height:40px; display:block; }
   .scroll-text{
     position:absolute; white-space:nowrap; padding:8px 12px; border-radius:8px;
@@ -91,7 +90,6 @@
     gap: 12px;
     padding: 10px 18px;
     overflow-x: auto;
-    overflow: visible;
     border-top: 1px solid rgba(255,255,255,0.05);
     z-index: 1100;
 }
@@ -111,7 +109,7 @@
     font-size: 20px; font-weight: bold; color: #ffd700;
     text-shadow: 0 0 8px #000;
     z-index: 1200;
-}
+  }
 
   #zonaLibreBtn, #zonaNormalBtn{
     position:fixed; top:50%; transform:translateY(-50%);
@@ -158,6 +156,19 @@
     z-index:2000; transition: transform .6s cubic-bezier(.2,.9,.2,1), opacity .2s;
   }
 
+  #freeMoneyText{
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 18px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 12px;
+    font-weight: bold;
+    color: #ffd700;
+    cursor: pointer;
+    z-index: 1300;
+  }
 </style>
 </head>
 <body>
@@ -187,22 +198,8 @@
       <button class="dir-btn" id="btnRight">→</button>
     </div>
   </div>
+  <div id="freeMoneyText" style="display:none;">TOCAME PARA RECIBIR 1B DE DINERO</div>
 </div>
-
-<div id="freeMoneyText" style="
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 24px;
-  font-weight: bold;
-  color: #ffffff;
-  text-shadow: 0 0 8px #000;
-  z-index: 1500;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: rgba(0,0,0,0.4);
-">TOCAME PARA RECIBIR 1B DE DINERO</div>
 
 <script>
 const brainrotsDisponibles = [
@@ -224,7 +221,6 @@ let playerData={username:'',money:0,brainrots:[]};
 
 function formatMoney(n){
   n=Math.floor(n);
-  if(n>=1e9)return(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';
   if(n>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'M';
   if(n>=1e3)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'k';
   return String(n);
@@ -247,18 +243,10 @@ const btnUp=document.getElementById('btnUp');
 const btnDown=document.getElementById('btnDown');
 const btnLeft=document.getElementById('btnLeft');
 const btnRight=document.getElementById('btnRight');
+const freeMoneyText=document.getElementById('freeMoneyText');
 
 function updateMoney(){moneyText.textContent=`💰 Dinero: ${formatMoney(playerData.money)}`;}
 
-function checkCollision(rect1, rect2){
-  return !(
-    rect1.right < rect2.left ||
-    rect1.left > rect2.right ||
-    rect1.bottom < rect2.top ||
-    rect1.top > rect2.bottom
-  );
-}
-  
 function addBrainrotToBar(brainrot){
   const div=document.createElement('div');
   div.className='brainrot';
@@ -355,46 +343,82 @@ setInterval(()=>{
   playerData.money+=income;updateMoney();saveData();
 },1000);
 
-zonaLibreBtn.onclick=()=>{mainArea.classList.add('free-zone');zoneOverlay.style.display='block';rainbowSquare.style.display='flex';controlsCluster.style.display='block';loginDiv.style.display='none';};
-zonaNormalBtn.onclick=()=>{mainArea.classList.remove('free-zone');zoneOverlay.style.display='none';rainbowSquare.style.display='none';controlsCluster.style.display='none';};
+zonaLibreBtn.onclick=()=>{
+  mainArea.classList.add('free-zone');
+  zoneOverlay.style.display='block';
+  rainbowSquare.style.display='flex';
+  controlsCluster.style.display='block';
+  freeMoneyText.style.display='block';
+  loginDiv.style.display='none';
+};
+
+zonaNormalBtn.onclick=()=>{
+  mainArea.classList.remove('free-zone');
+  zoneOverlay.style.display='none';
+  rainbowSquare.style.display='none';
+  controlsCluster.style.display='none';
+  freeMoneyText.style.display='none';
+};
 
 function startGame(){loginDiv.style.display='none';renderBottombarFromData();updateMoney();}
 loginBtn.onclick=()=>{if(!usernameInput.value)return;playerData.username=usernameInput.value;saveData();startGame();}
 if(localStorage.getItem('playerData')){playerData=JSON.parse(localStorage.getItem('playerData'));startGame();}
 
-let rainbowX = window.innerWidth / 2;
-let rainbowY = window.innerHeight / 2;
-const moveStep = 28; // pixels por movimiento
+// === Movimiento del cuadrado Rainbow ===
+let rainbowX = window.innerWidth/2;
+let rainbowY = window.innerHeight/2;
+const moveSpeed = 6;
+const pressed = new Set();
 
-function placeSquare() {
-  // limitar dentro de la ventana
-  const maxX = window.innerWidth - rainbowSquare.offsetWidth;
-  const maxY = window.innerHeight - rainbowSquare.offsetHeight;
-  rainbowX = Math.max(0, Math.min(rainbowX, maxX));
-  rainbowY = Math.max(0, Math.min(rainbowY, maxY));
-  rainbowSquare.style.left = rainbowX + 'px';
-  rainbowSquare.style.top = rainbowY + 'px';
+document.addEventListener('keydown', e=>{ if(mainArea.classList.contains('free-zone')) pressed.add(e.key.toLowerCase()); });
+document.addEventListener('keyup', e=>{ pressed.delete(e.key.toLowerCase()); });
+
+function checkCollision(rect1, rect2){
+  return !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 }
 
-// Botones
-btnUp.addEventListener('click', () => { rainbowY -= moveStep; placeSquare(); });
-btnDown.addEventListener('click', () => { rainbowY += moveStep; placeSquare(); });
-btnLeft.addEventListener('click', () => { rainbowX -= moveStep; placeSquare(); });
-btnRight.addEventListener('click', () => { rainbowX += moveStep; placeSquare(); });
+function placeSquare(){
+  rainbowSquare.style.left = rainbowX+'px';
+  rainbowSquare.style.top = rainbowY+'px';
 
-// Teclado WASD
-document.addEventListener('keydown', (e) => {
-  if (!mainArea.classList.contains('free-zone')) return;
-  const k = e.key.toLowerCase();
-  if (k === 'w') { rainbowY -= moveStep; placeSquare(); }
-  if (k === 's') { rainbowY += moveStep; placeSquare(); }
-  if (k === 'a') { rainbowX -= moveStep; placeSquare(); }
-  if (k === 'd') { rainbowX += moveStep; placeSquare(); }
-});
+  if(freeMoneyText.style.display==='block'){
+    const rect1 = rainbowSquare.getBoundingClientRect();
+    const rect2 = freeMoneyText.getBoundingClientRect();
+    if(checkCollision(rect1, rect2)){
+      const pass = prompt("Introduce la contraseña para recibir 1B de dinero:");
+      if(pass === "IkerElHacker"){
+        playerData.money += 1_000_000_000;
+        updateMoney();
+        saveData();
+        alert("¡Dinero recibido! 💰");
+        freeMoneyText.style.display = "none";
+      } else {
+        alert("Contraseña incorrecta ❌");
+      }
+    }
+  }
+}
 
-// inicializar posición
-placeSquare();
+function gameLoop(){
+  if(mainArea.classList.contains('free-zone')){
+    let dx=0, dy=0;
+    if(pressed.has('w')||pressed.has('arrowup')) dy-=1;
+    if(pressed.has('s')||pressed.has('arrowdown')) dy+=1;
+    if(pressed.has('a')||pressed.has('arrowleft')) dx-=1;
+    if(pressed.has('d')||pressed.has('arrowright')) dx+=1;
+    if(dx!==0 && dy!==0){ const m=Math.sqrt(2); dx/=m; dy/=m; }
+    rainbowX += dx*moveSpeed;
+    rainbowY += dy*moveSpeed;
+    placeSquare();
+  }
+  requestAnimationFrame(gameLoop);
+}
+requestAnimationFrame(gameLoop);
 
+btnUp.onclick=()=>{ rainbowY -= moveSpeed*4; placeSquare(); };
+btnDown.onclick=()=>{ rainbowY += moveSpeed*4; placeSquare(); };
+btnLeft.onclick=()=>{ rainbowX -= moveSpeed*4; placeSquare(); };
+btnRight.onclick=()=>{ rainbowX += moveSpeed*4; placeSquare(); };
 </script>
 </body>
 </html>
