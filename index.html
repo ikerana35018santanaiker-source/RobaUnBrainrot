@@ -315,6 +315,41 @@ zonaNormalBtn.onclick=()=>{mainArea.classList.remove('free-zone');zoneOverlay.st
 function startGame(){loginDiv.style.display='none';renderBottombarFromData();updateMoney();}
 loginBtn.onclick=()=>{if(!usernameInput.value)return;playerData.username=usernameInput.value;saveData();startGame();}
 if(localStorage.getItem('playerData')){playerData=JSON.parse(localStorage.getItem('playerData'));startGame();}
+  // === Movimiento del cuadrado Rainbow (Zona Libre) ===
+const rainbow = document.getElementById("rainbowSquare");
+let rainbowX = window.innerWidth / 2;
+let rainbowY = window.innerHeight / 2;
+const moveStep = 20;
+
+// Mueve el cuadrado según dirección
+function moveRainbow(dx, dy) {
+  rainbowX += dx * moveStep;
+  rainbowY += dy * moveStep;
+  rainbow.style.left = rainbowX + "px";
+  rainbow.style.top = rainbowY + "px";
+}
+
+// Controles con botones (si existen)
+const upBtn = document.getElementById("upBtn");
+const downBtn = document.getElementById("downBtn");
+const leftBtn = document.getElementById("leftBtn");
+const rightBtn = document.getElementById("rightBtn");
+
+if (upBtn && downBtn && leftBtn && rightBtn) {
+  upBtn.onclick = () => moveRainbow(0, -1);
+  downBtn.onclick = () => moveRainbow(0, 1);
+  leftBtn.onclick = () => moveRainbow(-1, 0);
+  rightBtn.onclick = () => moveRainbow(1, 0);
+}
+
+// Controles con teclado (WASD)
+document.addEventListener("keydown", (e) => {
+  if (e.key.toLowerCase() === "w") moveRainbow(0, -1);
+  if (e.key.toLowerCase() === "s") moveRainbow(0, 1);
+  if (e.key.toLowerCase() === "a") moveRainbow(-1, 0);
+  if (e.key.toLowerCase() === "d") moveRainbow(1, 0);
+});
+
 </script>
 </body>
 </html>
