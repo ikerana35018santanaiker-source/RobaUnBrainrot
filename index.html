@@ -189,6 +189,21 @@
   </div>
 </div>
 
+<div id="freeMoneyText" style="
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 0 8px #000;
+  z-index: 1500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.4);
+">TOCAME PARA RECIBIR 1B DE DINERO</div>
+
 <script>
 const brainrotsDisponibles = [
   {name:"Hackerini Ikerini",price:0,income:100,image:"https://www.imagar.com/wp-content/uploads/2020/11/analista_programador-scaled-1.jpg"},
@@ -235,6 +250,15 @@ const btnRight=document.getElementById('btnRight');
 
 function updateMoney(){moneyText.textContent=`💰 Dinero: ${formatMoney(playerData.money)}`;}
 
+function checkCollision(rect1, rect2){
+  return !(
+    rect1.right < rect2.left ||
+    rect1.left > rect2.right ||
+    rect1.bottom < rect2.top ||
+    rect1.top > rect2.bottom
+  );
+}
+  
 function addBrainrotToBar(brainrot){
   const div=document.createElement('div');
   div.className='brainrot';
