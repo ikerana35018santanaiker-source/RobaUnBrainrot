@@ -251,7 +251,11 @@ function addBrainrotToBar(brainrot){
   const div = document.createElement('div');
   div.className = 'brainrot';
   div.style.position = 'relative';
-  div.style.flexDirection = 'column'; // por si quieres poner botón arriba
+  div.style.flexDirection = 'column';
+  div.style.display = 'flex';
+  div.style.alignItems = 'center';
+  div.style.justifyContent = 'center';
+  div.style.cursor = 'pointer'; // importante: que todo el div sea clicable
 
   // Imagen
   const img = document.createElement('img');
@@ -279,7 +283,9 @@ function addBrainrotToBar(brainrot){
   sellBtn.style.boxShadow = '0 0 10px rgba(0,0,0,0.4)';
   div.appendChild(sellBtn);
 
+  // Click sobre toda la brainrot
   div.addEventListener('click', ()=>{
+    // ocultar otros botones visibles
     document.querySelectorAll('.brainrot button').forEach(b => b.style.display = 'none');
     sellBtn.style.display = 'block';
   });
@@ -291,7 +297,8 @@ function addBrainrotToBar(brainrot){
     const idx = playerData.brainrots.indexOf(brainrot);
     if(idx > -1) playerData.brainrots.splice(idx,1);
     div.remove();
-    updateMoney(); saveData();
+    updateMoney(); 
+    saveData();
   });
 
   bottombar.appendChild(div);
