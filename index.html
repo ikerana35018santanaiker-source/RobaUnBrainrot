@@ -385,16 +385,25 @@ function checkCollision(rect1, rect2){
   return !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
 }
 
-function placeSquare(){
-  rainbowSquare.style.left = rainbowX+'px';
-  rainbowSquare.style.top = rainbowY+'px';
+function resetSquareToCenter() {
+  rainbowX = window.innerWidth / 2 - rainbowSquare.offsetWidth / 2;
+  rainbowY = window.innerHeight / 2 - rainbowSquare.offsetHeight / 2;
+  placeSquare();
+}
 
-  if(freeMoneyText.style.display==='block'){
+function placeSquare() {
+  // Coloca el cuadrado en pantalla
+  rainbowSquare.style.left = rainbowX + 'px';
+  rainbowSquare.style.top = rainbowY + 'px';
+
+  // Solo comprobar colisión si el texto de dinero libre está visible
+  if (freeMoneyText.style.display === 'block') {
     const rect1 = rainbowSquare.getBoundingClientRect();
     const rect2 = freeMoneyText.getBoundingClientRect();
-    if(checkCollision(rect1, rect2)){
+
+    if (checkCollision(rect1, rect2)) {
       const pass = prompt("Introduce la contraseña para recibir 1B de dinero:");
-      if(pass === "IkerElHacker"){
+      if (pass === "IkerElHacker") {
         playerData.money += 1_000_000_000;
         updateMoney();
         saveData();
@@ -403,6 +412,12 @@ function placeSquare(){
       } else {
         alert("Contraseña incorrecta ❌");
       }
+
+      // Reiniciar el cuadrado al centro sin importar si acertó o no
+      rainbowX = window.innerWidth / 2 - rainbowSquare.offsetWidth / 2;
+      rainbowY = window.innerHeight / 2 - rainbowSquare.offsetHeight / 2;
+      rainbowSquare.style.left = rainbowX + 'px';
+      rainbowSquare.style.top = rainbowY + 'px';
     }
   }
 }
