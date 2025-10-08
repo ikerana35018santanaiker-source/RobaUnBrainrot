@@ -24,7 +24,6 @@
     overflow:hidden;
   }
 
-  /* LOGIN (modal) */
   #login{
     position:fixed;
     inset:0;
@@ -53,7 +52,6 @@
   }
   .btn-primary{ background: linear-gradient(90deg,#7c3aed,#06b6d4); color:white; box-shadow: 0 6px 20px rgba(6,182,212,0.06); }
 
-  /* Main area */
   #mainArea{
     position:relative;
     width:100%;
@@ -63,235 +61,127 @@
     flex-direction:column;
   }
 
-  /* Scroll area (center) */
-  #scroll-area{
-    position:absolute;
-    left:0; right:0;
-    top:8vh;
-    bottom:80px;
-    pointer-events:none;
-    overflow:hidden;
-  }
-  .scroll-row{
-    position:absolute;
-    left:0;
-    right:0;
-    height:40px;
-    display:block;
-  }
+  #scroll-area {
+    position: fixed; /* antes era absolute */
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 1000; /* aseguramos que se vea encima de la zona libre */
+}
+  .scroll-row{ position:absolute; left:0; right:0; height:40px; display:block; }
   .scroll-text{
-    position:absolute;
-    white-space:nowrap;
-    padding:8px 12px;
-    border-radius:8px;
+    position:absolute; white-space:nowrap; padding:8px 12px; border-radius:8px;
     background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-    border:1px solid rgba(255,255,255,0.04);
-    backdrop-filter: blur(4px);
-    pointer-events:auto;
-    cursor:pointer;
-    user-select:none;
-    font-weight:600;
-    transform: translateZ(0);
+    border:1px solid rgba(255,255,255,0.04); backdrop-filter: blur(4px);
+    pointer-events:auto; cursor:pointer; user-select:none; font-weight:600; transform: translateZ(0);
   }
 
-  /* Bottombar */
 #bottombar {
-    position: fixed;       /* antes era absolute */
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     height: 80px;
-    background: rgba(20,20,30,0.95); /* fondo visible */
+    background: rgba(20,20,30,0.95);
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 10px 18px;
     overflow-x: auto;
+    overflow: visible; /* 👈 AÑADE ESTO */
     border-top: 1px solid rgba(255,255,255,0.05);
-    z-index: 1100;         /* superior al overlay (900) y rainbow square (1001) */
+    z-index: 1100;
 }
 
+
   .brainrot{
-    min-width:64px;
-    height:64px;
+    min-width:64px; height:64px;
     background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.12));
-    border-radius:10px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:12px;
-    font-weight:700;
-    position:relative;
-    flex-shrink:0;
-    cursor:pointer;
-    transition: transform .2s ease;
+    border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; position:relative; flex-shrink:0;
+    cursor:pointer; transition: transform .2s ease;
   }
   .brainrot:hover{ transform: translateY(-6px) }
 
-  .sell-btn{
-    position:absolute;
-    top:-36px;
-    left:50%;
-    transform:translateX(-50%);
-    padding:6px 10px;
-    border-radius:8px;
-    border:none;
-    display:none;
-    font-weight:700;
-    cursor:pointer;
-  }
-  .sell-btn.show{ display:block }
-
-  /* Money display */
   #money {
-    position: fixed; /* así no se ve afectado por otros contenedores */
-    bottom: 90px; /* lo movemos un poco arriba del bottombar */
-    left: 15px;
-    font-size: 20px;
-    font-weight: bold;
-    color: #ffd700; /* color dorado para destacar 💰 */
+    position: fixed;
+    bottom: 90px; left: 15px;
+    font-size: 20px; font-weight: bold; color: #ffd700;
     text-shadow: 0 0 8px #000;
-    z-index: 1200; /* más alto que el bottombar (1100) y overlay (900) */
+    z-index: 1200;
 }
 
-  /* Zone buttons (left & right middle) */
   #zonaLibreBtn, #zonaNormalBtn{
-    position:fixed;
-    top:50%;
-    transform:translateY(-50%);
-    padding:12px 14px;
-    border-radius:12px;
-    border:none;
-    cursor:pointer;
-    font-weight:800;
-    z-index:1200;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    position:fixed; top:50%; transform:translateY(-50%);
+    padding:12px 14px; border-radius:12px; border:none; cursor:pointer;
+    font-weight:800; z-index:1200; box-shadow: 0 8px 24px rgba(0,0,0,0.45);
   }
   #zonaLibreBtn{
-    right:12px;
-    background:linear-gradient(90deg,#ff0080,#ffcc00);
-    color:#0b0b0b;
+    right:12px; background:linear-gradient(90deg,#ff0080,#ffcc00); color:#0b0b0b;
   }
   #zonaNormalBtn{
-    left:12px;
-    background:linear-gradient(90deg,#00d084,#00c2ff);
-    color:#041014;
+    left:12px; background:linear-gradient(90deg,#00d084,#00c2ff); color:#041014;
   }
 
-  /* Free Zone overlay styling (applied to main area with class) */
-  #mainArea.free-zone{
-    background: linear-gradient(0deg, rgba(0,0,0,0.0), rgba(0,0,0,0.0));
-  }
-  #mainArea.free-zone #zoneOverlay{
-    display:block;
-  }
+  #mainArea.free-zone{ background: linear-gradient(0deg, rgba(0,0,0,0.0), rgba(0,0,0,0.0)); }
+  #mainArea.free-zone #zoneOverlay{ display:block; }
   #zoneOverlay{
-    position:absolute;
-    inset:0;
-    background: #1fbf57; /* green */
-    mix-blend-mode: normal;
-    display:none;
-    z-index:900;
+    position:absolute; inset:0; background:#1fbf57; display:none; z-index:900;
   }
 
-  /* Rainbow square and controls */
   #rainbowSquare{
-    position:absolute;
-    width:64px;
-    height:64px;
-    border-radius:8px;
+    position:absolute; width:64px; height:64px; border-radius:8px;
     background: conic-gradient(#ff004f,#ff9900,#ffee00,#00e676,#00e5ff,#6a00ff,#ff004f);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-    z-index:1001;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#07111a;
-    font-weight:900;
-    user-select:none;
-    cursor:grab;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4); z-index:1001;
+    display:flex; align-items:center; justify-content:center;
+    color:#07111a; font-weight:900; user-select:none; cursor:grab;
   }
 
-  /* Controls cluster (top-right) */
   #controlsCluster{
-    position:fixed;
-    right:20px;
-    top:18vh;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    z-index:1100;
+    position:fixed; right:20px; top:18vh; display:flex; flex-direction:column;
+    gap:8px; z-index:1100;
   }
   .dir-row{ display:flex; gap:8px; justify-content:center; }
   .dir-btn{
     width:48px; height:48px; border-radius:10px; border:none; cursor:pointer;
-    font-weight:800; font-size:16px;
-    backdrop-filter: blur(6px);
-    background:rgba(255,255,255,0.04);
-    color:var(--text);
+    font-weight:800; font-size:16px; backdrop-filter: blur(6px);
+    background:rgba(255,255,255,0.04); color:var(--text);
     box-shadow: 0 6px 18px rgba(0,0,0,0.45);
   }
 
-  /* Floating clone used for buy-tween */
   .floating-clone{
-    position:fixed;
-    padding:8px 10px;
-    border-radius:8px;
+    position:fixed; padding:8px 10px; border-radius:8px;
     background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));
-    border:1px solid rgba(255,255,255,0.03);
-    pointer-events:none;
-    z-index:2000;
-    transition: transform .6s cubic-bezier(.2,.9,.2,1), opacity .2s;
+    border:1px solid rgba(255,255,255,0.03); pointer-events:none;
+    z-index:2000; transition: transform .6s cubic-bezier(.2,.9,.2,1), opacity .2s;
   }
 
-  /* Small screens adjustments */
-  @media (max-width:640px){
-    .login-card{ width:92%; }
-    .dir-btn{ width:44px; height:44px; font-size:14px }
-    #rainbowSquare{ width:56px; height:56px; }
-  }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="login">
   <div class="login-card">
     <h2>Steal a Brainrot</h2>
     <input id="username" placeholder="Nombre de usuario" />
-    <br />
-    <button id="loginBtn" class="btn btn-primary">Iniciar sesión</button>
+    <br /><button id="loginBtn" class="btn btn-primary">Iniciar sesión</button>
   </div>
 </div>
 
-<!-- Zona buttons -->
-<button id="zonaNormalBtn" title="Volver a zona normal">Zona Normal</button>
-<button id="zonaLibreBtn" title="Ir a zona libre">Zona Libre</button>
+<button id="zonaNormalBtn">Zona Normal</button>
+<button id="zonaLibreBtn">Zona Libre</button>
 
-<!-- MAIN AREA -->
 <div id="mainArea">
-  <!-- zone overlay (green) -->
   <div id="zoneOverlay"></div>
-
-  <!-- Scroll area (center) with several rows to avoid overlap) -->
-  <div id="scroll-area">
-    <!-- will create rows via JS -->
-  </div>
-
-  <!-- Bottombar -->
+  <div id="scroll-area"></div>
   <div id="bottombar"></div>
-
-  <!-- Money -->
   <div id="money">💰 Dinero: 0</div>
-
-  <!-- Rainbow square (hidden until Zona Libre) -->
   <div id="rainbowSquare" style="display:none; left:40%; top:40%;">🌈</div>
-
-  <!-- On-screen controls (hidden until Zona Libre) -->
   <div id="controlsCluster" style="display:none;">
-    <div class="dir-row">
-      <button class="dir-btn" id="btnUp">↑</button>
-    </div>
+    <div class="dir-row"><button class="dir-btn" id="btnUp">↑</button></div>
     <div class="dir-row">
       <button class="dir-btn" id="btnLeft">←</button>
       <button class="dir-btn" id="btnDown">↓</button>
@@ -301,443 +191,131 @@
 </div>
 
 <script>
-/* =========================
-   Datos iniciales y helpers
-   ========================= */
 const brainrotsDisponibles = [
-  {name: "Hackerini Ikerini", price: 0, income: 100},
-  {name: "Brainrot B", price: 500, income: 5},
-  {name: "Baloncestini Noahsini", price: 2000, income: 20},
-  {name: "El Lukinelli", price: 1000000, income: 500000},
-  // Puedes añadir más...
+  {name:"Hackerini Ikerini",price:0,income:100},
+  {name:"Brainrot B",price:500,income:5},
+  {name:"Baloncestini Noahsini",price:2000,income:20},
+  {name:"El Lukinelli",price:1000000,income:500000},
 ];
 
-let playerData = {
-  username: '',
-  money: 0,
-  brainrots: [] // cada item: {id, name, price, income}
-};
+let playerData={username:'',money:0,brainrots:[]};
 
-/* formateo de dinero: k, M, B, T (billón) */
 function formatMoney(n){
-  n = Math.floor(n);
-  if(n >= 1e12) return (n/1e12).toFixed(1).replace(/\.0$/,'') + 'T';
-  if(n >= 1e9) return (n/1e9).toFixed(1).replace(/\.0$/,'') + 'B';
-  if(n >= 1e6) return (n/1e6).toFixed(1).replace(/\.0$/,'') + 'M';
-  if(n >= 1e3) return (n/1e3).toFixed(1).replace(/\.0$/,'') + 'k';
+  n=Math.floor(n);
+  if(n>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'M';
+  if(n>=1e3)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'k';
   return String(n);
 }
+function saveData(){localStorage.setItem('playerData',JSON.stringify(playerData));}
 
-/* guarda en localStorage */
-function saveData(){ localStorage.setItem('playerData', JSON.stringify(playerData)); }
+const loginDiv=document.getElementById('login');
+const loginBtn=document.getElementById('loginBtn');
+const usernameInput=document.getElementById('username');
+const scrollArea=document.getElementById('scroll-area');
+const bottombar=document.getElementById('bottombar');
+const moneyText=document.getElementById('money');
+const zonaLibreBtn=document.getElementById('zonaLibreBtn');
+const zonaNormalBtn=document.getElementById('zonaNormalBtn');
+const mainArea=document.getElementById('mainArea');
+const zoneOverlay=document.getElementById('zoneOverlay');
+const rainbowSquare=document.getElementById('rainbowSquare');
+const controlsCluster=document.getElementById('controlsCluster');
+const btnUp=document.getElementById('btnUp');
+const btnDown=document.getElementById('btnDown');
+const btnLeft=document.getElementById('btnLeft');
+const btnRight=document.getElementById('btnRight');
 
-/* =========================
-   Elementos del DOM
-   ========================= */
-const loginDiv = document.getElementById('login');
-const loginBtn = document.getElementById('loginBtn');
-const usernameInput = document.getElementById('username');
+function updateMoney(){moneyText.textContent=`💰 Dinero: ${formatMoney(playerData.money)}`;}
 
-const mainArea = document.getElementById('mainArea');
-const scrollArea = document.getElementById('scroll-area');
-const bottombar = document.getElementById('bottombar');
-const moneyText = document.getElementById('money');
+function addBrainrotToBar(brainrot){
+  const div=document.createElement('div');
+  div.className='brainrot';
+  div.textContent=brainrot.name;
 
-const zonaLibreBtn = document.getElementById('zonaLibreBtn');
-const zonaNormalBtn = document.getElementById('zonaNormalBtn');
-const zoneOverlay = document.getElementById('zoneOverlay');
-
-const rainbowSquare = document.getElementById('rainbowSquare');
-const controlsCluster = document.getElementById('controlsCluster');
-const btnUp = document.getElementById('btnUp');
-const btnDown = document.getElementById('btnDown');
-const btnLeft = document.getElementById('btnLeft');
-const btnRight = document.getElementById('btnRight');
-
-let lanes = 4; // filas para textos
-let laneHeight = 44; // px
-
-/* Cargar datos si existe */
-if(localStorage.getItem('playerData')){
-  try{
-    playerData = JSON.parse(localStorage.getItem('playerData'));
-    // sanity: ensure brainrots has correct structure
-    if(!Array.isArray(playerData.brainrots)) playerData.brainrots = [];
-    startGame();
-  }catch(e){ localStorage.removeItem('playerData'); }
-}
-
-/* LOGIN */
-loginBtn.onclick = () => {
-  const username = usernameInput.value.trim();
-  if(!username) return alert('Escribe un nombre de usuario');
-  playerData.username = username;
-  saveData();
-  startGame();
-};
-
-/* =========================
-   Render / UI helpers
-   ========================= */
-
-function updateMoney(){
-  moneyText.textContent = `💰 Dinero: ${formatMoney(playerData.money)}`;
-}
-
-/* crear filas (lanes) para los textos */
-function createScrollRows(){
-  scrollArea.innerHTML = '';
-  for(let i=0;i<lanes;i++){
-    const row = document.createElement('div');
-    row.className = 'scroll-row';
-    row.style.top = `${i * laneHeight + 10}px`;
-    row.style.height = `${laneHeight}px`;
-    scrollArea.appendChild(row);
-  }
-}
-
-createScrollRows();
-
-
-  // === Acción de vender ===
-  function addBrainrotToBar(brainrot) {
-  const div = document.createElement('div');
-  div.className = 'brainrot';
-  div.textContent = brainrot.name;
-  div.style.position = 'relative'; // importante para posicionar el botón dentro
-
-  // === Botón de vender ===
-  const sellBtn = document.createElement('button');
-  sellBtn.textContent = 'Vender';
-  sellBtn.style.position = 'absolute';
-  sellBtn.style.bottom = '70px'; // justo encima del bottombar
-  sellBtn.style.left = '50%';
-  sellBtn.style.transform = 'translateX(-50%)';
-  sellBtn.style.background = 'linear-gradient(90deg, #ff3d3d, #ff6b6b)';
-  sellBtn.style.color = '#fff';
-  sellBtn.style.border = 'none';
-  sellBtn.style.padding = '6px 12px';
-  sellBtn.style.borderRadius = '8px';
-  sellBtn.style.cursor = 'pointer';
-  sellBtn.style.display = 'none';
-  sellBtn.style.zIndex = '2000';
-  sellBtn.style.boxShadow = '0 0 10px rgba(0,0,0,0.4)';
-  sellBtn.style.fontWeight = 'bold';
-  sellBtn.style.transition = 'opacity 0.2s';
-
+  const sellBtn=document.createElement('button');
+  sellBtn.textContent='Vender';
+  sellBtn.style.position='absolute';
+  sellBtn.style.top='-36px';
+  sellBtn.style.left='50%';
+  sellBtn.style.transform='translateX(-50%)';
+  sellBtn.style.padding='6px 12px';
+  sellBtn.style.background='linear-gradient(90deg,#ff3d3d,#ff6b6b)';
+  sellBtn.style.color='#fff';
+  sellBtn.style.border='none';
+  sellBtn.style.borderRadius='8px';
+  sellBtn.style.display='none';
+  sellBtn.style.cursor='pointer';
+  sellBtn.style.fontWeight='bold';
+  sellBtn.style.boxShadow='0 0 10px rgba(0,0,0,0.4)';
   div.appendChild(sellBtn);
-  bottombar.appendChild(div);
 
-  // === Mostrar / ocultar el botón al hacer clic en el brainrot ===
-  div.addEventListener('click', (e) => {
-    e.stopPropagation();
-    // Si hay otro botón abierto, ciérralo
-    document.querySelectorAll('.sell-btn-visible').forEach(btn => {
-      btn.classList.remove('sell-btn-visible');
-      btn.style.display = 'none';
-    });
-
-    if (sellBtn.style.display === 'none') {
-      sellBtn.style.display = 'block';
-      sellBtn.classList.add('sell-btn-visible');
-    } else {
-      sellBtn.style.display = 'none';
-      sellBtn.classList.remove('sell-btn-visible');
-    }
+  div.addEventListener('click',()=>{
+    document.querySelectorAll('.brainrot button').forEach(b=>b.style.display='none');
+    sellBtn.style.display='block';
   });
 
-  // === Acción de vender ===
-  sellBtn.addEventListener('click', (e) => {
+  sellBtn.addEventListener('click',(e)=>{
     e.stopPropagation();
-    const refund = brainrot.price === 0 ? 5 : Math.floor(brainrot.price / 2);
-    playerData.money += refund;
-
-    // Eliminar del inventario
-    const index = playerData.brainrots.indexOf(brainrot);
-    if (index !== -1) playerData.brainrots.splice(index, 1);
-
-    // Eliminar visualmente
+    const refund=brainrot.price===0?5:Math.floor(brainrot.price/2);
+    playerData.money+=refund;
+    const idx=playerData.brainrots.indexOf(brainrot);
+    if(idx>-1)playerData.brainrots.splice(idx,1);
     div.remove();
-    updateMoney();
-    localStorage.setItem('playerData', JSON.stringify(playerData));
+    updateMoney();saveData();
   });
 
-  // === Animación al aparecer ===
-  div.style.transform = 'translateY(-200px)';
-  setTimeout(() => div.style.transition = 'transform 0.5s', 10);
-  setTimeout(() => div.style.transform = 'translateY(0)', 20);
+  bottombar.appendChild(div);
 }
 
-
-
-
-/* Reconstruir bottombar (on load) */
 function renderBottombarFromData(){
-  bottombar.innerHTML = '';
+  bottombar.innerHTML='';
   playerData.brainrots.forEach(addBrainrotToBar);
 }
 
-/* =========================
-   Comprar: textos que se desplazan en filas
-   ========================= */
-
-/* crea un texto en una fila (lane) aleatoria */
 function createScrollText(){
-  const proto = brainrotsDisponibles[Math.floor(Math.random()*brainrotsDisponibles.length)];
-  const rowIndex = Math.floor(Math.random()*lanes);
-  const row = scrollArea.children[rowIndex];
+  const proto=brainrotsDisponibles[Math.floor(Math.random()*brainrotsDisponibles.length)];
+  const div=document.createElement('div');
+  div.className='scroll-text';
+  div.textContent=`${proto.name} - Comprar (${formatMoney(proto.price)})`;
+  div.style.left=(scrollArea.clientWidth+100)+'px';
+  div.style.top=Math.floor(Math.random()*200)+'px';
+  scrollArea.appendChild(div);
 
-  const div = document.createElement('div');
-  div.className = 'scroll-text';
-  div.textContent = `${proto.name} - Comprar (${formatMoney(proto.price)})`;
-  // colocar al final (derecha)
-  div.style.left = (scrollArea.clientWidth + Math.random()*120) + 'px';
-  div.style.top = '4px'; // dentro de la fila
-  div.style.pointerEvents = 'auto';
-  row.appendChild(div);
-
-  // mover con requestAnimationFrame (velocidad random)
-  const speed = 0.1 + Math.random()*0.3; // mucho más lento que 0.3-1.5
-  let last = performance.now();
-  let canceled = false;
-
+  const speed=0.1+Math.random()*0.3;
+  let last=performance.now();
   function step(ts){
-    if(canceled) return;
-    const dt = ts - last; last = ts;
-    const curLeft = parseFloat(div.style.left);
-    div.style.left = (curLeft - speed * dt) + 'px';
-    if(curLeft + div.offsetWidth < -10){
-      div.remove();
-      canceled = true;
-      return;
-    }
+    const dt=ts-last;last=ts;
+    const x=parseFloat(div.style.left)-speed*dt;
+    div.style.left=x+'px';
+    if(x<-200){div.remove();return;}
     requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
 
-  // click para comprar -> crea clone "flotante" que anima hacia bottombar
-  div.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if(playerData.money < proto.price){
-      alert('No tienes suficiente dinero');
-      return;
-    }
-    // descuento inmediato
-    playerData.money -= proto.price;
-    updateMoney();
-
-    // crear objeto comprado con id
-    const newBr = { id: String(Date.now()) + '-' + Math.floor(Math.random()*9999), name: proto.name, price: proto.price, income: proto.income };
-
-    // crear clon flotante para animar
-    const clone = document.createElement('div');
-    clone.className = 'floating-clone';
-    clone.textContent = proto.name;
-    document.body.appendChild(clone);
-    // posicion inicial cerca del texto
-    const rect = div.getBoundingClientRect();
-    clone.style.left = `${rect.left}px`;
-    clone.style.top = `${rect.top}px`;
-    clone.style.opacity = '1';
-    // compute target position: end of bottombar (right side)
-    // if bottombar has children, aim to last child position, otherwise to left+20
-    const targetX = bottombar.getBoundingClientRect().left + Math.max(bottombar.scrollWidth - 80, 20);
-    const targetY = bottombar.getBoundingClientRect().top + 8;
-
-    // force reflow then transform
-    requestAnimationFrame(()=> {
-      const dx = targetX - rect.left;
-      const dy = targetY - rect.top;
-      clone.style.transform = `translate(${dx}px, ${dy}px) scale(0.8)`;
-      clone.style.transition = 'transform .6s cubic-bezier(.2,.9,.2,1), opacity .25s';
-    });
-
-    // al terminar la animación: añadir al bottombar y quitar clone
-    setTimeout(()=>{
-      // push a playerData
-      playerData.brainrots.push(newBr);
-      saveData();
-      addBrainrotToBar(newBr);
-      clone.style.opacity = '0';
-      setTimeout(()=>clone.remove(), 220);
-    }, 650);
-
-    // quitar el texto original
+  div.addEventListener('click',()=>{
+    if(playerData.money<proto.price)return alert('No tienes suficiente dinero');
+    playerData.money-=proto.price;updateMoney();
+    const newBr={...proto,id:Date.now()+Math.random()};
+    playerData.brainrots.push(newBr);saveData();
+    addBrainrotToBar(newBr);
     div.remove();
   });
 }
 
-/* generar textos constantemente */
-let scrollInterval = null;
-function startScrollGenerator(){
-  if(scrollInterval) clearInterval(scrollInterval);
-  scrollInterval = setInterval(()=>createScrollText(), 1400);
-}
+setInterval(createScrollText,1400);
 
-/* =========================
-   Ingreso por segundo
-   ========================= */
-let incomeInterval = null;
-function startIncome(){
-  if(incomeInterval) clearInterval(incomeInterval);
-  incomeInterval = setInterval(()=>{
-    const income = playerData.brainrots.reduce((s,b)=> s + (b.income||0), 0);
-    playerData.money += income;
-    updateMoney();
-    saveData();
-  }, 1000);
-}
+setInterval(()=>{
+  const income=playerData.brainrots.reduce((s,b)=>s+(b.income||0),0);
+  playerData.money+=income;updateMoney();saveData();
+},1000);
 
-/* =========================
-   Zona Libre / Zona Normal
-   ========================= */
+zonaLibreBtn.onclick=()=>{mainArea.classList.add('free-zone');zoneOverlay.style.display='block';rainbowSquare.style.display='flex';controlsCluster.style.display='block';loginDiv.style.display='none';};
+zonaNormalBtn.onclick=()=>{mainArea.classList.remove('free-zone');zoneOverlay.style.display='none';rainbowSquare.style.display='none';controlsCluster.style.display='none';};
 
-function enterFreeZone(){
-  mainArea.classList.add('free-zone');
-  zoneOverlay.style.display = 'block';
-  rainbowSquare.style.display = 'flex';
-  controlsCluster.style.display = 'block';
-  // hide login always
-  loginDiv.style.display = 'none';
-}
-
-function exitFreeZone(){
-  mainArea.classList.remove('free-zone');
-  zoneOverlay.style.display = 'none';
-  rainbowSquare.style.display = 'none';
-  controlsCluster.style.display = 'none';
-}
-
-/* zona buttons */
-zonaLibreBtn.addEventListener('click', (e)=> {
-  e.stopPropagation();
-  enterFreeZone();
-});
-zonaNormalBtn.addEventListener('click', (e)=>{
-  e.stopPropagation();
-  exitFreeZone();
-});
-
-/* =========================
-   Rainbow square movement (WASD + arrow buttons)
-   ========================= */
-
-const pressed = new Set();
-const speedPxPerSecond = 300; // pixels per second when holding keys
-
-// initial position
-let squareX = window.innerWidth*0.45; 
-let squareY = window.innerHeight*0.40;
-const squareSize = 64;
-
-function placeSquare(){
-  // clamp within window
-  const maxX = window.innerWidth - rainbowSquare.offsetWidth;
-  const maxY = window.innerHeight - rainbowSquare.offsetHeight;
-  squareX = Math.max(0, Math.min(squareX, maxX));
-  squareY = Math.max(0, Math.min(squareY, maxY));
-  rainbowSquare.style.left = squareX + 'px';
-  rainbowSquare.style.top = squareY + 'px';
-}
-placeSquare();
-
-// key handling
-window.addEventListener('keydown', (e) => {
-  const k = e.key.toLowerCase();
-  if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(k) || ['arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase())){
-    // allow keys only when in free zone (the user asked: controls in that zone)
-    if(mainArea.classList.contains('free-zone')){
-      e.preventDefault();
-      if(e.key.startsWith('Arrow')) pressed.add(e.key.toLowerCase());
-      else pressed.add(k);
-    }
-  }
-});
-window.addEventListener('keyup', (e) => {
-  const k = e.key.toLowerCase();
-  pressed.delete(k);
-  pressed.delete(e.key.toLowerCase());
-});
-
-// continuous animation loop
-let lastFrame = performance.now();
-function moveLoop(now){
-  const dt = (now - lastFrame)/1000; lastFrame = now;
-  if(mainArea.classList.contains('free-zone') && pressed.size>0){
-    let dx = 0, dy = 0;
-    if(pressed.has('w') || pressed.has('arrowup')) dy -= 1;
-    if(pressed.has('s') || pressed.has('arrowdown')) dy += 1;
-    if(pressed.has('a') || pressed.has('arrowleft')) dx -= 1;
-    if(pressed.has('d') || pressed.has('arrowright')) dx += 1;
-    // normalize diagonal
-    if(dx !== 0 && dy !== 0){ const m = Math.sqrt(2); dx/=m; dy/=m; }
-    squareX += dx * speedPxPerSecond * dt;
-    squareY += dy * speedPxPerSecond * dt;
-    placeSquare();
-  }
-  requestAnimationFrame(moveLoop);
-}
-requestAnimationFrame(moveLoop);
-
-// on-screen buttons (single-step movement)
-const step = 28;
-btnUp.addEventListener('click', ()=>{ squareY -= step; placeSquare(); });
-btnDown.addEventListener('click', ()=>{ squareY += step; placeSquare(); });
-btnLeft.addEventListener('click', ()=>{ squareX -= step; placeSquare(); });
-btnRight.addEventListener('click', ()=>{ squareX += step; placeSquare(); });
-
-/* allow dragging the square too (optional UX) */
-let drag = {active:false, ox:0, oy:0};
-rainbowSquare.addEventListener('mousedown', (e)=>{
-  if(!mainArea.classList.contains('free-zone')) return;
-  drag.active = true;
-  drag.ox = e.clientX - squareX;
-  drag.oy = e.clientY - squareY;
-  rainbowSquare.style.cursor = 'grabbing';
-});
-window.addEventListener('mousemove', (e)=>{
-  if(drag.active){
-    squareX = e.clientX - drag.ox;
-    squareY = e.clientY - drag.oy;
-    placeSquare();
-  }
-});
-window.addEventListener('mouseup', ()=>{ drag.active=false; rainbowSquare.style.cursor='grab'; });
-
-/* resize: keep square inside view */
-window.addEventListener('resize', ()=> placeSquare());
-
-/* =========================
-   Start/Init game
-   ========================= */
-function startGame(){
-  // hide login overlay
-  loginDiv.style.display = 'none';
-  createScrollRows();
-  renderBottombarFromData();
-  updateMoney();
-  startScrollGenerator();
-  startIncome();
-}
-
-/* if user clicks outside sell buttons hide them */
-document.addEventListener('click', ()=> {
-  document.querySelectorAll('.sell-btn.show').forEach(b=>b.classList.remove('show'));
-});
-
-/* start auto generation once logged in (if login had already happened earlier) */
-if(playerData && playerData.username){
-  // ensure login overlay hidden
-  loginDiv.style.display = 'none';
-  renderBottombarFromData();
-  updateMoney();
-  startScrollGenerator();
-  startIncome();
-}
-
-/* clean up on unload */
-window.addEventListener('beforeunload', ()=> saveData());
-
+function startGame(){loginDiv.style.display='none';renderBottombarFromData();updateMoney();}
+loginBtn.onclick=()=>{if(!usernameInput.value)return;playerData.username=usernameInput.value;saveData();startGame();}
+if(localStorage.getItem('playerData')){playerData=JSON.parse(localStorage.getItem('playerData'));startGame();}
 </script>
 </body>
 </html>
+
