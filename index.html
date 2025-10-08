@@ -319,7 +319,7 @@ if(localStorage.getItem('playerData')){playerData=JSON.parse(localStorage.getIte
 const rainbow = document.getElementById("rainbowSquare");
 let rainbowX = window.innerWidth / 2;
 let rainbowY = window.innerHeight / 2;
-const moveStep = 20;
+
 
 // Mueve el cuadrado según dirección
 function moveRainbow(dx, dy) {
@@ -329,26 +329,24 @@ function moveRainbow(dx, dy) {
   rainbow.style.top = rainbowY + "px";
 }
 
-// Controles con botones (si existen)
-const upBtn = document.getElementById("upBtn");
-const downBtn = document.getElementById("downBtn");
-const leftBtn = document.getElementById("leftBtn");
-const rightBtn = document.getElementById("rightBtn");
+  // on-screen buttons (mover cuadrado Rainbow)
+const step = 28;
 
-if (upBtn && downBtn && leftBtn && rightBtn) {
-  upBtn.onclick = () => moveRainbow(0, -1);
-  downBtn.onclick = () => moveRainbow(0, 1);
-  leftBtn.onclick = () => moveRainbow(-1, 0);
-  rightBtn.onclick = () => moveRainbow(1, 0);
-}
+btnUp.addEventListener('click', ()=>{ squareY -= step; placeSquare(); });
+btnDown.addEventListener('click', ()=>{ squareY += step; placeSquare(); });
+btnLeft.addEventListener('click', ()=>{ squareX -= step; placeSquare(); });
+btnRight.addEventListener('click', ()=>{ squareX += step; placeSquare(); });
 
 // Controles con teclado (WASD)
 document.addEventListener("keydown", (e) => {
-  if (e.key.toLowerCase() === "w") moveRainbow(0, -1);
-  if (e.key.toLowerCase() === "s") moveRainbow(0, 1);
-  if (e.key.toLowerCase() === "a") moveRainbow(-1, 0);
-  if (e.key.toLowerCase() === "d") moveRainbow(1, 0);
+  if(!mainArea.classList.contains('free-zone')) return; // solo zona libre
+  const k = e.key.toLowerCase();
+  if(k === "w") { squareY -= step; placeSquare(); }
+  if(k === "s") { squareY += step; placeSquare(); }
+  if(k === "a") { squareX -= step; placeSquare(); }
+  if(k === "d") { squareX += step; placeSquare(); }
 });
+
 
 </script>
 </body>
