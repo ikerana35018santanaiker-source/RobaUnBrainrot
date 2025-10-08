@@ -61,15 +61,15 @@
   }
 
   #scroll-area {
-    position: fixed;
-    top: 50%;
+    position: fixed;      /* fijo en pantalla */
+    top: 50%;             /* mitad de pantalla */
     left: 0;
     width: 100%;
-    height: 200px;
+    height: 200px;        /* ajusta según necesites */
     overflow: visible;
     pointer-events: none;
-    z-index: 1000;
-  }
+    z-index: 1150;        /* 🔹 más alto que el bottombar (1100) */
+}
   .scroll-row{ position:absolute; left:0; right:0; height:40px; display:block; }
   .scroll-text{
     position:absolute; white-space:nowrap; padding:8px 12px; border-radius:8px;
