@@ -633,6 +633,142 @@ btnUp.onclick=()=>{ rainbowY -= moveSpeed*4; placeSquare(); };
 btnDown.onclick=()=>{ rainbowY += moveSpeed*4; placeSquare(); };
 btnLeft.onclick=()=>{ rainbowX -= moveSpeed*4; placeSquare(); };
 btnRight.onclick=()=>{ rainbowX += moveSpeed*4; placeSquare(); };
+
+  <!-- === PANEL DE CUSTOMIZACIÓN === -->
+<div id="customPanel" style="
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(20,20,30,0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 20px;
+  width: 320px;
+  z-index: 2000;
+  display: none;
+  color: white;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+">
+  <h3 style="margin-top:0;">🎨 Personalización</h3>
+
+  <label>Color del personaje:</label><br>
+  <input type="color" id="colorPicker" style="margin:10px 0; width:100%; height:40px; border:none; border-radius:8px;"><br>
+
+  <label>Elegir skin:</label><br>
+  <select id="skinSelect" style="width:100%; padding:8px; border-radius:8px; margin-top:8px;">
+    <option value="square">🟥 Cuadrado</option>
+    <option value="circle">⚪ Círculo</option>
+    <option value="triangle">🔺 Triángulo</option>
+    <option value="knight">🗡️ Caballero Oscuro</option>
+    <option value="batman">🦇 Batman</option>
+    <option value="customImg">🧠 Imagen Especial</option>
+  </select>
+
+  <button id="applyCustom" class="btn btn-primary" style="margin-top:14px;">Aplicar</button><br>
+  <button id="closeCustom" class="btn" style="margin-top:8px;">Cerrar</button>
+</div>
+
+<!-- Botón flotante para abrir el panel -->
+<button id="openCustomBtn" style="
+  position: fixed;
+  right: 12px;
+  top: 12px;
+  padding: 10px 14px;
+  font-weight: bold;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(90deg,#7c3aed,#06b6d4);
+  color: white;
+  z-index: 1500;
+  display: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+">🎨 Customizar</button>
+
+<script>
+// === CUSTOMIZACIÓN ===
+const openCustomBtn = document.getElementById('openCustomBtn');
+const customPanel = document.getElementById('customPanel');
+const colorPicker = document.getElementById('colorPicker');
+const skinSelect = document.getElementById('skinSelect');
+const applyCustom = document.getElementById('applyCustom');
+const closeCustom = document.getElementById('closeCustom');
+
+// Mostrar botón solo en zona libre
+zonaLibreBtn.addEventListener('click', () => {
+  openCustomBtn.style.display = 'block';
+});
+zonaNormalBtn.addEventListener('click', () => {
+  openCustomBtn.style.display = 'none';
+  customPanel.style.display = 'none';
+});
+
+// Abrir/Cerrar panel
+openCustomBtn.onclick = () => { customPanel.style.display = 'block'; };
+closeCustom.onclick = () => { customPanel.style.display = 'none'; };
+
+// Cargar preferencias guardadas
+let customData = JSON.parse(localStorage.getItem('customData') || '{"color":"#ffffff","skin":"square"}');
+colorPicker.value = customData.color;
+skinSelect.value = customData.skin;
+
+// Aplicar cambios
+applyCustom.onclick = () => {
+  const color = colorPicker.value;
+  const skin = skinSelect.value;
+  customData = { color, skin };
+  localStorage.setItem('customData', JSON.stringify(customData));
+  applySkin();
+  customPanel.style.display = 'none';
+  alert("✅ Personalización aplicada");
+};
+
+// Función para aplicar skin y color
+function applySkin() {
+  rainbowSquare.style.background = customData.color;
+
+  rainbowSquare.innerHTML = ""; // limpiar contenido previo
+
+  switch (customData.skin) {
+    case 'circle':
+      rainbowSquare.style.borderRadius = '50%';
+      rainbowSquare.textContent = '⚪';
+      break;
+    case 'triangle':
+      rainbowSquare.style.borderRadius = '0';
+      rainbowSquare.style.width = '0';
+      rainbowSquare.style.height = '0';
+      rainbowSquare.style.borderLeft = '32px solid transparent';
+      rainbowSquare.style.borderRight = '32px solid transparent';
+      rainbowSquare.style.borderBottom = `64px solid ${customData.color}`;
+      break;
+    case 'knight':
+      rainbowSquare.style.borderRadius = '12px';
+      rainbowSquare.style.backgroundImage = 'url(https://cdn-icons-png.flaticon.com/512/2076/2076902.png)';
+      rainbowSquare.style.backgroundSize = 'cover';
+      break;
+    case 'batman':
+      rainbowSquare.style.borderRadius = '12px';
+      rainbowSquare.style.backgroundImage = 'url(https://cdn-icons-png.flaticon.com/512/831/831276.png)';
+      rainbowSquare.style.backgroundSize = 'cover';
+      break;
+    case 'customImg':
+      rainbowSquare.style.borderRadius = '12px';
+      rainbowSquare.style.backgroundImage = 'url(https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/86df/live/8a6d6200-7787-11f0-907d-6ff0082c2def.jpg.webp)';
+      rainbowSquare.style.backgroundSize = 'cover';
+      break;
+    default:
+      rainbowSquare.style.borderRadius = '8px';
+      rainbowSquare.style.backgroundImage = 'none';
+      rainbowSquare.textContent = '🌈';
+      break;
+  }
+  rainbowSquare.style.width = '64px';
+  rainbowSquare.style.height = '64px';
+}
+applySkin();
 </script>
 </body>
 </html>
