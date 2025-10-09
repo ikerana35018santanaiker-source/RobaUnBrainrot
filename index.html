@@ -202,6 +202,109 @@
 </div>
 
 <script>
+// === Botón del Panel Admin ===
+const adminBtn = document.createElement('button');
+adminBtn.textContent = "Panel Admin";
+adminBtn.style.position = 'fixed';
+adminBtn.style.top = '20px';
+adminBtn.style.right = '20px';
+adminBtn.style.zIndex = '1200';
+adminBtn.style.padding = '10px 16px';
+adminBtn.style.borderRadius = '10px';
+adminBtn.style.border = 'none';
+adminBtn.style.background = '#ff4444';
+adminBtn.style.color = 'white';
+adminBtn.style.fontWeight = 'bold';
+adminBtn.style.cursor = 'pointer';
+document.body.appendChild(adminBtn);
+
+// === Crear el panel (oculto por defecto) ===
+const adminPanel = document.createElement('div');
+adminPanel.style.position = 'fixed';
+adminPanel.style.top = '50%';
+adminPanel.style.left = '50%';
+adminPanel.style.transform = 'translate(-50%, -50%)';
+adminPanel.style.background = 'rgba(20,20,20,0.95)';
+adminPanel.style.padding = '20px';
+adminPanel.style.borderRadius = '12px';
+adminPanel.style.boxShadow = '0 0 20px rgba(255,255,255,0.3)';
+adminPanel.style.color = 'white';
+adminPanel.style.zIndex = '1300';
+adminPanel.style.display = 'none';
+adminPanel.style.width = '300px';
+adminPanel.style.textAlign = 'center';
+adminPanel.innerHTML = `
+  <h3 style="margin-bottom:10px;">🧠 Panel Admin</h3>
+
+  <div style="margin-bottom:12px;">
+    <label>Añadir dinero:</label><br>
+    <input id="adminAddMoney" type="number" placeholder="Cantidad" style="width:100%;margin-top:4px;padding:4px;border-radius:6px;">
+    <button id="btnAddMoney" style="margin-top:6px;padding:6px 10px;border:none;border-radius:6px;background:#00c853;color:white;">Añadir</button>
+  </div>
+
+  <div style="margin-bottom:12px;">
+    <label>Spawnear Brainrot:</label><br>
+    <input id="adminBrainrotName" type="text" placeholder="Nombre exacto" style="width:100%;margin-top:4px;padding:4px;border-radius:6px;">
+    <button id="btnSpawnBrainrot" style="margin-top:6px;padding:6px 10px;border:none;border-radius:6px;background:#2979ff;color:white;">Spawnear</button>
+  </div>
+
+  <button id="btnCerrarAdmin" style="margin-top:8px;padding:6px 10px;border:none;border-radius:6px;background:#ff1744;color:white;">Cerrar</button>
+`;
+document.body.appendChild(adminPanel);
+
+// === Función para abrir el panel con contraseña ===
+function openAdminPanel() {
+  const saved = localStorage.getItem("isAdmin");
+  if (saved === "true") {
+    adminPanel.style.display = 'block';
+    return;
+  }
+
+  const pass = prompt("Introduce la contraseña del panel admin:");
+  if (pass === "IkerAbuse") {
+    alert("✅ Acceso concedido");
+    localStorage.setItem("isAdmin", "true");
+    adminPanel.style.display = 'block';
+  } else if (pass !== null) {
+    alert("❌ Contraseña incorrecta");
+  }
+}
+
+// === Eventos del botón principal ===
+adminBtn.onclick = openAdminPanel;
+
+// === Función cerrar panel ===
+document.getElementById("btnCerrarAdmin").onclick = () => {
+  adminPanel.style.display = 'none';
+};
+
+// === Función para añadir dinero ===
+document.getElementById("btnAddMoney").onclick = () => {
+  const amount = parseFloat(document.getElementById("adminAddMoney").value);
+  if (!isNaN(amount) && amount > 0) {
+    playerData.money += amount;
+    updateMoney();
+    saveData();
+    alert(`💰 Se añadieron ${amount.toLocaleString()} monedas`);
+  } else {
+    alert("Introduce una cantidad válida");
+  }
+};
+
+// === Función para spawnear brainrot por nombre ===
+document.getElementById("btnSpawnBrainrot").onclick = () => {
+  const name = document.getElementById("adminBrainrotName").value.trim();
+  const found = brainrots.find(b => b.name.toLowerCase() === name.toLowerCase());
+  if (found) {
+    playerData.brainrots.push(found);
+    renderBottombarFromData();
+    saveData();
+    alert(`🧠 Brainrot "${found.name}" añadido a tu base`);
+  } else {
+    alert("❌ No se encontró ningún Brainrot con ese nombre exacto");
+  }
+};
+
 const brainrotsDisponibles = [
   {name:"Hackerini Ikerini",price:0,income:100,image:"https://www.imagar.com/wp-content/uploads/2020/11/analista_programador-scaled-1.jpg"},
   {name:"Lukili Luchini",price:500,income:1000,image:"https://www3.gobiernodecanarias.org/medusa/wiki/images/thumb/5/51/Lucha-Canaria.png/300px-Lucha-Canaria.png"},
