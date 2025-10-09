@@ -394,8 +394,16 @@ zonaNormalBtn.onclick=()=>{
 };
 
 function startGame(){loginDiv.style.display='none';renderBottombarFromData();updateMoney();}
-loginBtn.onclick=()=>{if(!usernameInput.value)return;playerData.username=usernameInput.value;saveData();startGame();}
-if(localStorage.getItem('playerData')){playerData=JSON.parse(localStorage.getItem('playerData'));startGame();}
+// Asignamos un nombre de usuario por defecto
+playerData.username = "Player1";
+
+// Si hay datos guardados, cargarlos
+if(localStorage.getItem('playerData')){
+  playerData = JSON.parse(localStorage.getItem('playerData'));
+}
+
+// Iniciar juego automáticamente
+startGame();
 
 // === Movimiento del cuadrado Rainbow ===
 let rainbowX = window.innerWidth/2;
