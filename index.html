@@ -1,558 +1,577 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Steal a Brainrot — Game</title>
-    <style>
-      :root {
-        --bg: #0f0f12;
-        --panel: #141417d9;
-        --accent1: linear-gradient(90deg, #8b5cf6, #06b6d4);
-        --glass: rgba(255, 255, 255, 0.03);
-        --text: #e6eef6;
-      }
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Steal a Brainrot — Game</title>
+<style>
+  :root{
+    --bg:#0f0f12;
+    --panel:#141417d9;
+    --accent1:linear-gradient(90deg,#8b5cf6,#06b6d4);
+    --glass: rgba(255,255,255,0.03);
+    --text:#e6eef6;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    height:100vh;
+    font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: radial-gradient(1200px 600px at 10% 10%, rgba(98,0,238,0.12), transparent),
+                radial-gradient(800px 400px at 90% 90%, rgba(6,182,212,0.06), transparent),
+                var(--bg);
+    color:var(--text);
+    overflow:hidden;
+  }
+  #login{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+    backdrop-filter: blur(6px);
+  }
+  .login-card{
+    width:360px;
+    padding:24px;
+    border-radius:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+    text-align:center;
+  }
+  .login-card h2{margin:0 0 12px 0; font-size:20px; letter-spacing:0.6px}
+  .login-card input{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);
+    background:transparent; color:var(--text); margin-top:8px;
+  }
+  .btn{
+    display:inline-block; padding:10px 14px; border-radius:10px; border:none; cursor:pointer;
+    font-weight:600; margin-top:12px;
+  }
+  .btn-primary{ background: linear-gradient(90deg,#7c3aed,#06b6d4); color:white; box-shadow: 0 6px 20px rgba(6,182,212,0.06); }
 
-      * {
-        box-sizing: border-box
-      }
+  #mainArea{
+    position:relative;
+    width:100%;
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
 
-      body {
-        margin: 0;
-        height: 100vh;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-        background: radial-gradient(1200px 600px at 10% 10%, rgba(98, 0, 238, 0.12), transparent),
-          radial-gradient(800px 400px at 90% 90%, rgba(6, 182, 212, 0.06), transparent),
-          var(--bg);
-        color: var(--text);
-        overflow: hidden;
-      }
+  #scroll-area {
+    position: fixed;      /* fijo en pantalla */
+    top: 50%;             /* mitad de pantalla */
+    left: 0;
+    width: 100%;
+    height: 200px;        /* ajusta según necesites */
+    overflow: visible;
+    pointer-events: none;
+    z-index: 1150;        /* 🔹 más alto que el bottombar (1100) */
+}
+  .scroll-row{ position:absolute; left:0; right:0; height:40px; display:block; }
+  .scroll-text{
+    position:absolute; white-space:nowrap; padding:8px 12px; border-radius:8px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.04); backdrop-filter: blur(4px);
+    pointer-events:auto; cursor:pointer; user-select:none; font-weight:600; transform: translateZ(0);
+  }
 
-      #mainArea {
-        position: relative;
-        width: 100%;
-        height: 100vh;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-      }
+#bottombar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: rgba(20,20,30,0.95);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    overflow-x: auto;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    z-index: 1100;
+}
 
-      #scroll-area {
-        position: fixed;
-        top: 50%;
-        left: 0;
-        width: 100%;
-        height: 200px;
-        overflow: visible;
-        pointer-events: none;
-        z-index: 1150;
-      }
+  .brainrot{
+    min-width:64px; height:64px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.12));
+    border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; position:relative; flex-shrink:0;
+    cursor:pointer; transition: transform .2s ease;
+  }
+  .brainrot:hover{ transform: translateY(-6px) }
 
-      .scroll-row {
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 40px;
-        display: block;
-      }
+  #money {
+    position: fixed;
+    bottom: 90px; left: 15px;
+    font-size: 20px; font-weight: bold; color: #ffd700;
+    text-shadow: 0 0 8px #000;
+    z-index: 1200;
+  }
 
-      .scroll-text {
-        position: absolute;
-        white-space: nowrap;
-        padding: 8px 12px;
-        border-radius: 8px;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
-        border: 1px solid rgba(255, 255, 255, 0.04);
-        backdrop-filter: blur(4px);
-        pointer-events: auto;
-        cursor: pointer;
-        user-select: none;
-        font-weight: 600;
-        transform: translateZ(0);
-      }
+  #zonaLibreBtn, #zonaNormalBtn{
+    position:fixed; top:50%; transform:translateY(-50%);
+    padding:12px 14px; border-radius:12px; border:none; cursor:pointer;
+    font-weight:800; z-index:1200; box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  }
+  #zonaLibreBtn{
+    right:12px; background:linear-gradient(90deg,#ff0080,#ffcc00); color:#0b0b0b;
+  }
+  #zonaNormalBtn{
+    left:12px; background:linear-gradient(90deg,#00d084,#00c2ff); color:#041014;
+  }
 
-      #bottombar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 80px;
-        background: rgba(20, 20, 30, 0.95);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 18px;
-        overflow-x: auto;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-        z-index: 1100;
-      }
+  #mainArea.free-zone{ background: linear-gradient(0deg, rgba(0,0,0,0.0), rgba(0,0,0,0.0)); }
+  #mainArea.free-zone #zoneOverlay{ display:block; }
+  #zoneOverlay{
+    position:absolute; inset:0; background:#1fbf57; display:none; z-index:900;
+  }
 
-      .brainrot {
-        min-width: 64px;
-        height: 64px;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.12));
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        font-weight: 700;
-        position: relative;
-        flex-shrink: 0;
-        cursor: pointer;
-        transition: transform .2s ease;
-      }
+  #rainbowSquare{
+    position:absolute; width:64px; height:64px; border-radius:8px;
+    background: conic-gradient(#ff004f,#ff9900,#ffee00,#00e676,#00e5ff,#6a00ff,#ff004f);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4); z-index:1001;
+    display:flex; align-items:center; justify-content:center;
+    color:#07111a; font-weight:900; user-select:none; cursor:grab;
+  }
 
-      .brainrot:hover {
-        transform: translateY(-6px)
-      }
+  #controlsCluster{
+    position:fixed; right:20px; top:18vh; display:flex; flex-direction:column;
+    gap:8px; z-index:1100;
+  }
+  .dir-row{ display:flex; gap:8px; justify-content:center; }
+  .dir-btn{
+    width:48px; height:48px; border-radius:10px; border:none; cursor:pointer;
+    font-weight:800; font-size:16px; backdrop-filter: blur(6px);
+    background:rgba(255,255,255,0.04); color:var(--text);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  }
 
-      #money {
-        position: fixed;
-        bottom: 90px;
-        left: 15px;
-        font-size: 20px;
-        font-weight: bold;
-        color: #ffd700;
-        text-shadow: 0 0 8px #000;
-        z-index: 1200;
-      }
+  .floating-clone{
+    position:fixed; padding:8px 10px; border-radius:8px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));
+    border:1px solid rgba(255,255,255,0.03); pointer-events:none;
+    z-index:2000; transition: transform .6s cubic-bezier(.2,.9,.2,1), opacity .2s;
+  }
 
-      #zonaLibreBtn,
-      #zonaNormalBtn {
-        position: fixed;
-        top: 50%;
-        transform: translateY(-50%);
-        padding: 12px 14px;
-        border-radius: 12px;
-        border: none;
-        cursor: pointer;
-        font-weight: 800;
-        z-index: 1200;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-      }
+  #freeMoneyText{
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 18px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 12px;
+    font-weight: bold;
+    color: #ffd700;
+    cursor: pointer;
+    z-index: 1300;
+  }
+  /* small admin button styling fallback */
+  .admin-btn {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 1250;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(90deg,#ff6b6b,#ff3d3d);
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  }
 
-      #zonaLibreBtn {
-        right: 12px;
-        background: linear-gradient(90deg, #ff0080, #ffcc00);
-        color: #0b0b0b;
-      }
+  .admin-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background: rgba(16,16,20,0.98);
+    color: var(--text);
+    z-index: 1300;
+    padding: 18px;
+    border-radius: 12px;
+    width: 320px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  }
+  .admin-panel input { width:100%; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--text); }
+  .admin-row { margin-bottom:10px; text-align:left; }
+  .admin-panel button { margin-top:8px; padding:8px 10px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
+  .admin-close { background:#ff1744; color:white; }
+  .admin-action { background:#00c853; color:white; margin-right:6px; }
+  .admin-spawn { background:#2979ff; color:white; }
+</style>
+</head>
+<body>
 
-      #zonaNormalBtn {
-        left: 12px;
-        background: linear-gradient(90deg, #00d084, #00c2ff);
-        color: #041014;
-      }
+<div id="login">
+  <div class="login-card">
+    <h2>Steal a Brainrot</h2>
+    <input id="username" placeholder="Nombre de usuario" />
+    <br /><button id="loginBtn" class="btn btn-primary">Iniciar sesión</button>
+  </div>
+</div>
 
-      #mainArea.free-zone {
-        background: linear-gradient(0deg, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.0));
-      }
+<button id="zonaNormalBtn">Zona Normal</button>
+<button id="zonaLibreBtn">Zona Libre</button>
 
-      #mainArea.free-zone #zoneOverlay {
-        display: block;
-      }
-
-      #zoneOverlay {
-        position: absolute;
-        inset: 0;
-        background: #1fbf57;
-        display: none;
-        z-index: 900;
-      }
-
-      #rainbowSquare {
-        position: absolute;
-        width: 64px;
-        height: 64px;
-        border-radius: 8px;
-        background: conic-gradient(#ff004f, #ff9900, #ffee00, #00e676, #00e5ff, #6a00ff, #ff004f);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-        z-index: 1001;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #07111a;
-        font-weight: 900;
-        user-select: none;
-        cursor: grab;
-      }
-
-      #controlsCluster {
-        position: fixed;
-        right: 20px;
-        top: 18vh;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        z-index: 1100;
-      }
-
-      .dir-row {
-        display: flex;
-        gap: 8px;
-        justify-content: center;
-      }
-
-      .dir-btn {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
-        border: none;
-        cursor: pointer;
-        font-weight: 800;
-        font-size: 16px;
-        backdrop-filter: blur(6px);
-        background: rgba(255, 255, 255, 0.04);
-        color: var(--text);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
-      }
-
-      .floating-clone {
-        position: fixed;
-        padding: 8px 10px;
-        border-radius: 8px;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.12));
-        border: 1px solid rgba(255, 255, 255, 0.03);
-        pointer-events: none;
-        z-index: 2000;
-        transition: transform .6s cubic-bezier(.2, .9, .2, 1), opacity .2s;
-      }
-
-      #freeMoneyText {
-        position: absolute;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 12px 18px;
-        background: rgba(0, 0, 0, 0.6);
-        border-radius: 12px;
-        font-weight: bold;
-        color: #ffd700;
-        cursor: pointer;
-        z-index: 1300;
-      }
-    </style>
-  </head>
-  <body>
-    <button id="zonaNormalBtn">Zona Normal</button>
-    <button id="zonaLibreBtn">Zona Libre</button>
-    <div id="mainArea">
-      <div id="zoneOverlay"></div>
-      <div id="scroll-area"></div>
-      <div id="bottombar"></div>
-      <div id="money">💰 Dinero: 0</div>
-      <div id="rainbowSquare" style="display:none; left:40%; top:40%;">🌈</div>
-      <div id="controlsCluster" style="display:none;">
-        <div class="dir-row">
-          <button class="dir-btn" id="btnUp">↑</button>
-        </div>
-        <div class="dir-row">
-          <button class="dir-btn" id="btnLeft">←</button>
-          <button class="dir-btn" id="btnDown">↓</button>
-          <button class="dir-btn" id="btnRight">→</button>
-        </div>
-      </div>
-      <div id="freeMoneyText" style="display:none;">TOCAME PARA RECIBIR 1B DE DINERO</div>
+<div id="mainArea">
+  <div id="zoneOverlay"></div>
+  <div id="scroll-area"></div>
+  <div id="bottombar"></div>
+  <div id="money">💰 Dinero: 0</div>
+  <div id="rainbowSquare" style="display:none; left:40%; top:40%;">🌈</div>
+  <div id="controlsCluster" style="display:none;">
+    <div class="dir-row"><button class="dir-btn" id="btnUp">↑</button></div>
+    <div class="dir-row">
+      <button class="dir-btn" id="btnLeft">←</button>
+      <button class="dir-btn" id="btnDown">↓</button>
+      <button class="dir-btn" id="btnRight">→</button>
     </div>
-    <script>
-      const brainrotsDisponibles = [{
-        name: "Hackerini Ikerini",
-        price: 0,
-        income: 100,
-        image: "https://www.imagar.com/wp-content/uploads/2020/11/analista_programador-scaled-1.jpg"
-      }, {
-        name: "Lukili Luchini",
-        price: 500,
-        income: 1000,
-        image: "https://www3.gobiernodecanarias.org/medusa/wiki/images/thumb/5/51/Lucha-Canaria.png/300px-Lucha-Canaria.png"
-      }, {
-        name: "La Clase de 6º",
-        price: 1000000000,
-        income: 55000000,
-        image: "https://portal.edu.gva.es/reinasofia/wp-content/uploads/sites/461/2020/09/19.png"
-      }, {
-        name: "Los Bros",
-        price: 1000000000,
-        income: 55000000,
-        image: "https://static.wikia.nocookie.net/stealabr/images/5/53/BROOOOOOOO.png/revision/latest?cb=20250909152032"
-      }, {
-        name: "Futbolini Golini",
-        price: 500000,
-        income: 250000,
-        image: "https://upload.wikimedia.org/wikipedia/commons/e/e7/Steaua_vs._CFR_Cluj_in_2010.jpg"
-      }, {
-        name: "FoxitoJilitos",
-        price: 0,
-        income: 500,
-        image: "https://fv5-5.files.fm/thumb_show.php?i=w5ca3csxt2&view&v=1&PHPSESSID=6c2f56d612eb5427c75cbd49d6d69d2b569d4e7c"
-      }, {
-        name: "Oscarini Bicicletini",
-        price: 0,
-        income: 500,
-        image: "https://fv5-3.files.fm/thumb_show.php?i=w73ckuup28&view&v=1&PHPSESSID=6c2f56d612eb5427c75cbd49d6d69d2b569d4e7c"
-      }, {
-        name: "Baloncestini Noahsini",
-        price: 2000,
-        income: 200,
-        image: "https://png.pngtree.com/png-clipart/20240824/original/pngtree-illustration-of-a-basketball-player-jump-shotting-hand-drawn-style-vector-png-image_15840318.png"
-      }, {
-        name: "Los Bros",
-        price: 1000000000,
-        income: 55000000,
-        image: "https://static.wikitide.net/italianbrainrotwiki/thumb/d/dd/Los_Tralaleritos_and_Los_Tungtungtungcitos.png/300px-Los_Tralaleritos_and_Los_Tungtungtungcitos.png"
-      }, {
-        name: "El Abramini",
-        price: 125,
-        income: 150000,
-        image: "https://www.shutterstock.com/image-illustration/image-not-found-grayscale-photo-260nw-2425909941.jpg"
-      }, {
-        name: "Brainrot De Prueba Tonto",
-        price: 125,
-        income: 150000,
-        image: ""
-      }, {
-        name: "Yaelini Pegatini",
-        price: 0,
-        income: 0,
-        image: ""
-      }, {
-        name: "Jayde",
-        price: 100000,
-        income: 100000000,
-        image: ""
-      }, {
-        name: "Samuelini Handballanini",
-        price: 1000,
-        income: 100000,
-        image: "https://static.vecteezy.com/system/resources/previews/002/173/451/non_2x/abstract-handball-player-jumping-with-the-ball-from-splash-of-watercolors-illustration-of-paints-vector.jpg"
-      }, {
-        name: "Javini Futbolini10(TEN)",
-        price: 100,
-        income: 150000,
-        image: ""
-      }, {
-        name: "Lucsex(16⚽)",
-        price: 100,
-        income: 150000,
-        image: "https://images.unsplash.com/photo-1660926655155-8b1f8f9079f5?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-      }, {
-        name: "NoahEl13",
-        price: 100,
-        income: 150000,
-        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSogev13Cku6cLlq52Wio43M12WjFJbOKvS5A&s"
-      }, {
-        name: "67",
-        price: 10000,
-        income: 99999999,
-        image: "https://media.printables.com/media/prints/4cfd0f4d-58d4-4f07-a722-b0dea4fae468/images/10710706_7bf024f2-999d-4af1-8dc2-c6dcf7c219d6_55b46c59-a08e-4d18-b5d4-5b3b3df4b297/thumbs/inside/1280x960/png/image_2025-09-19_225144170.webp"
-      }, {
-        name: "El Lukinelli",
-        price: 1000000,
-        income: 500000,
-        image: "https://fv5-5.files.fm/thumb_show.php?i=5gxgtb65zs&view&v=1&PHPSESSID=6c2f56d612eb5427c75cbd49d6d69d2b569d4e7c"
-      }, ];
-      let playerData = {
-        username: 'Player1',
-        money: 0,
-        brainrots: []
-      };
+  </div>
+  <div id="freeMoneyText" style="display:none;">TOCAME PARA RECIBIR 1B DE DINERO</div>
+</div>
 
-      function formatMoney(n) {
-        n = Math.floor(n);
-        if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
-        if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
-        return String(n);
-      }
+<script>
+const brainrotsDisponibles = [
+  {name:"Hackerini Ikerini",price:0,income:100,image:"https://www.imagar.com/wp-content/uploads/2020/11/analista_programador-scaled-1.jpg"},
+  {name:"Lukili Luchini",price:500,income:1000,image:"https://www3.gobiernodecanarias.org/medusa/wiki/images/thumb/5/51/Lucha-Canaria.png/300px-Lucha-Canaria.png"},
+  {name:"La Clase de 6º",price:1000000000,income:55000000,image:"https://portal.edu.gva.es/reinasofia/wp-content/uploads/sites/461/2020/09/19.png"},
+  {name:"Los Bros",price:1000000000,income:55000000,image:"https://static.wikia.nocookie.net/stealabr/images/5/53/BROOOOOOOO.png/revision/latest?cb=20250909152032"},
+  {name:"Futbolini Golini",price:500000,income:250000,image:"https://upload.wikimedia.org/wikipedia/commons/e/e7/Steaua_vs._CFR_Cluj_in_2010.jpg"},  
+  {name:"FoxitoJilitos",price:0,income:500,image:"https://fv5-5.files.fm/thumb_show.php?i=w5ca3csxt2&view&v=1&PHPSESSID=6c2f56d612eb5427c75cbd49d6d69d2b569d4e7c"},
+  {name:"Oscarini Bicicletini",price:0,income:500,image:"https://fv5-3.files.fm/thumb_show.php?i=w73ckuup28&view&v=1&PHPSESSID=6c2f56d612eb5427c75cbd49d6d69d2b569d4e7c"},
+  {name:"Baloncestini Noahsini",price:2000,income:200,image:"https://png.pngtree.com/png-clipart/20240824/original/pngtree-illustration-of-a-basketball-player-jump-shotting-hand-drawn-style-vector-png-image_15840318.png"},
+  {name:"Los Bros",price:1000000000,income:55000000,image:"https://static.wikitide.net/italianbrainrotwiki/thumb/d/dd/Los_Tralaleritos_and_Los_Tungtungtungcitos.png/300px-Los_Tralaleritos_and_Los_Tungtungtungcitos.png"},
+  {name:"El Abramini",price:125,income:150000,image:"https://www.shutterstock.com/image-illustration/image-not-found-grayscale-photo-260nw-2425909941.jpg"},
+  {name:"Brainrot De Prueba Tonto",price:125,income:150000,image:""},
+  {name:"Yaelini Pegatini",price:0,income:0,image:""},
+  {name:"Jayde",price:100000,income:100000000,image:""},
+  {name:"Samuelini Handballanini",price:1000,income:100000,image:"https://static.vecteezy.com/system/resources/previews/002/173/451/non_2x/abstract-handball-player-jumping-with-the-ball-from-splash-of-watercolors-illustration-of-paints-vector.jpg"},
+  {name:"Javini Futbolini10(TEN)",price:100,income:150000,image:""},
+  {name:"Lucsex(16⚽)",price:100,income:150000,image:"https://images.unsplash.com/photo-1660926655155-8b1f8f9079f5?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"},
+  {name:"NoahEl13",price:100,income:150000,image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSogev13Cku6cLlq52Wio43M12WjFJbOKvS5A&s"},
+  {name:"67",price:10000,income:99999999,image:"https://media.printables.com/media/prints/4cfd0f4d-58d4-4f07-a722-b0dea4fae468/images/10710706_7bf024f2-999d-4af1-8dc2-c6dcf7c219d6_55b46c59-a08e-4d18-b5d4-5b3b3df4b297/thumbs/inside/1280x960/png/image_2025-09-19_225144170.webp"},
+  {name:"El Lukinelli",price:1000000,income:500000,image:"https://fv5-5.files.fm/thumb_show.php?i=5gxgtb65zs&view&v=1&PHPSESSID=6c2f56d612eb5427c75cbd49d6d69d2b569d4e7c"},
+];
 
-      function saveData() {
-        localStorage.setItem('playerData', JSON.stringify(playerData));
-      }
-      const scrollArea = document.getElementById('scroll-area');
-      const bottombar = document.getElementById('bottombar');
-      const moneyText = document.getElementById('money');
-      const zonaLibreBtn = document.getElementById('zonaLibreBtn');
-      const zonaNormalBtn = document.getElementById('zonaNormalBtn');
-      const mainArea = document.getElementById('mainArea');
-      const zoneOverlay = document.getElementById('zoneOverlay');
-      const rainbowSquare = document.getElementById('rainbowSquare');
-      const controlsCluster = document.getElementById('controlsCluster');
-      const btnUp = document.getElementById('btnUp');
-      const btnDown = document.getElementById('btnDown');
-      const btnLeft = document.getElementById('btnLeft');
-      const btnRight = document.getElementById('btnRight');
-      const freeMoneyText = document.getElementById('freeMoneyText');
+let playerData={username:'',money:0,brainrots:[]};
 
-      function updateMoney() {
-        moneyText.textContent = `💰 Dinero: ${formatMoney(playerData.money)}`;
-      }
+function formatMoney(n){
+  n=Math.floor(n);
+  if(n>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'M';
+  if(n>=1e3)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'k';
+  return String(n);
+}
+function saveData(){localStorage.setItem('playerData',JSON.stringify(playerData));}
 
-      function addBrainrotToBar(brainrot) {
-        const div = document.createElement('div');
-        div.className = 'brainrot';
-        div.style.position = 'relative';
-        const img = document.createElement('img');
-        img.src = brainrot.image || 'https://via.placeholder.com/64';
-        img.style.width = '64px';
-        img.style.height = '64px';
-        img.style.borderRadius = '10px';
-        img.style.objectFit = 'cover';
-        img.style.pointerEvents = 'none';
-        div.appendChild(img);
-        bottombar.appendChild(div);
-      }
+const loginDiv=document.getElementById('login');
+const loginBtn=document.getElementById('loginBtn');
+const usernameInput=document.getElementById('username');
+const scrollArea=document.getElementById('scroll-area');
+const bottombar=document.getElementById('bottombar');
+const moneyText=document.getElementById('money');
+const zonaLibreBtn=document.getElementById('zonaLibreBtn');
+const zonaNormalBtn=document.getElementById('zonaNormalBtn');
+const mainArea=document.getElementById('mainArea');
+const zoneOverlay=document.getElementById('zoneOverlay');
+const rainbowSquare=document.getElementById('rainbowSquare');
+const controlsCluster=document.getElementById('controlsCluster');
+const btnUp=document.getElementById('btnUp');
+const btnDown=document.getElementById('btnDown');
+const btnLeft=document.getElementById('btnLeft');
+const btnRight=document.getElementById('btnRight');
+const freeMoneyText=document.getElementById('freeMoneyText');
 
-      function renderBottombarFromData() {
-        bottombar.innerHTML = '';
-        playerData.brainrots.forEach(addBrainrotToBar);
-      }
+function updateMoney(){moneyText.textContent=`💰 Dinero: ${formatMoney(playerData.money)}`;}
 
-      function createScrollText() {
-        const proto = brainrotsDisponibles[Math.floor(Math.random() * brainrotsDisponibles.length)];
-        const div = document.createElement('div');
-        div.className = 'scroll-text';
-        div.innerHTML = `
-			<div style="display:flex;flex-direction:column;align-items:center;">
-				<img src="${proto.image}" style="width:128px;height:128px;border-radius:10px;margin-bottom:6px;object-fit:cover;">
-					<div style="font-weight:700;">${proto.name}</div>
-					<div style="font-size:13px;">Comprar (${formatMoney(proto.price)})</div>
-				</div>`;
-        div.style.left = (scrollArea.clientWidth + 100) + 'px';
-        div.style.top = Math.floor(Math.random() * 200) + 'px';
-        scrollArea.appendChild(div);
-        const speed = 0.1 + Math.random() * 0.3;
-        let last = performance.now();
+function addBrainrotToBar(brainrot) {
+  const div = document.createElement('div');
+  div.className = 'brainrot';
+  div.style.position = 'relative';
 
-        function step(ts) {
-          const dt = ts - last;
-          last = ts;
-          const x = parseFloat(div.style.left) - speed * dt;
-          div.style.left = x + 'px';
-          if (x < -200) {
-            div.remove();
-            return;
-          }
-          requestAnimationFrame(step);
-        }
-        requestAnimationFrame(step);
-        div.addEventListener('click', () => {
-          if (playerData.money < proto.price) return alert('No tienes suficiente dinero');
-          playerData.money -= proto.price;
-          updateMoney();
-          const newBr = {
-            ...proto,
-            id: Date.now() + Math.random()
-          };
-          playerData.brainrots.push(newBr);
-          saveData();
-          addBrainrotToBar(newBr);
-          div.remove();
-        });
-      }
-      setInterval(createScrollText, 1400);
-      setInterval(() => {
-        const income = playerData.brainrots.reduce((s, b) => s + (b.income || 0), 0);
-        playerData.money += income;
+  // --- Imagen del Brainrot ---
+  const img = document.createElement('img');
+  img.src = brainrot.image || 'https://via.placeholder.com/64'; // placeholder si no hay
+  img.style.width = '64px';
+  img.style.height = '64px';
+  img.style.borderRadius = '10px';
+  img.style.objectFit = 'cover';
+  img.style.pointerEvents = 'none'; // 👈 para que el click pase al div
+  div.appendChild(img);
+
+  // --- Botón de vender ---
+  const sellBtn = document.createElement('button');
+  sellBtn.textContent = 'Vender';
+  sellBtn.className = 'sell-btn';
+  sellBtn.style.top = '-36px';
+  sellBtn.style.left = '50%';
+  sellBtn.style.transform = 'translateX(-50%)';
+  div.appendChild(sellBtn);
+
+  // Click en el div muestra el botón
+  div.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.sell-btn').forEach(b => b.style.display = 'none');
+    sellBtn.style.display = 'block';
+  });
+
+  // Click en el botón vende
+  sellBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const refund = brainrot.price === 0 ? 5 : Math.floor(brainrot.price / 2);
+    playerData.money += refund;
+
+    const idx = playerData.brainrots.indexOf(brainrot);
+    if (idx !== -1) playerData.brainrots.splice(idx, 1);
+
+    div.remove();
+    updateMoney();
+    saveData();
+  });
+
+  bottombar.appendChild(div);
+}
+
+function renderBottombarFromData(){
+  bottombar.innerHTML='';
+  playerData.brainrots.forEach(addBrainrotToBar);
+}
+
+function createScrollText(){
+  const proto=brainrotsDisponibles[Math.floor(Math.random()*brainrotsDisponibles.length)];
+  const div=document.createElement('div');
+  div.className='scroll-text';
+  div.innerHTML = `
+    <div style="
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:4px;
+    ">
+      <img src="${proto.image || 'https://www.shutterstock.com/image-illustration/image-not-found-grayscale-photo-260nw-2425909941.jpg'}"
+           style="width:128px; height:128px; border-radius:10px; margin-bottom:6px; object-fit:cover; box-shadow:0 0 8px rgba(0,0,0,0.4);">
+      <div style="font-weight:700; margin-bottom:4px;">${proto.name}</div>
+      <div style="font-size:13px; opacity:0.9;">Comprar (${formatMoney(proto.price)})</div>
+    </div>
+  `;
+  div.style.left=(scrollArea.clientWidth+100)+'px';
+  div.style.top=Math.floor(Math.random()*200)+'px';
+  scrollArea.appendChild(div);
+
+  const speed=0.1+Math.random()*0.3;
+  let last=performance.now();
+  function step(ts){
+    const dt=ts-last;last=ts;
+    const x=parseFloat(div.style.left)-speed*dt;
+    div.style.left=x+'px';
+    if(x<-200){div.remove();return;}
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  div.addEventListener('click',()=>{
+    if(playerData.money<proto.price)return alert('No tienes suficiente dinero');
+    playerData.money-=proto.price;updateMoney();
+    const newBr={...proto,id:Date.now()+Math.random()};
+    playerData.brainrots.push(newBr);saveData();
+    addBrainrotToBar(newBr);
+    div.remove();
+  });
+}
+
+setInterval(createScrollText,1400);
+
+setInterval(()=>{
+  const income=playerData.brainrots.reduce((s,b)=>s+(b.income||0),0);
+  playerData.money+=income;updateMoney();saveData();
+},1000);
+
+zonaLibreBtn.onclick=()=>{
+  mainArea.classList.add('free-zone');
+  zoneOverlay.style.display='block';
+  rainbowSquare.style.display='flex';
+  controlsCluster.style.display='block';
+  freeMoneyText.style.display='block';
+  loginDiv.style.display='none';
+};
+
+zonaNormalBtn.onclick=()=>{
+  mainArea.classList.remove('free-zone');
+  zoneOverlay.style.display='none';
+  rainbowSquare.style.display='none';
+  controlsCluster.style.display='none';
+  freeMoneyText.style.display='none';
+};
+
+function startGame(){loginDiv.style.display='none';renderBottombarFromData();updateMoney();}
+loginBtn.onclick=()=>{if(!usernameInput.value)return;playerData.username=usernameInput.value;saveData();startGame();}
+if(localStorage.getItem('playerData')){playerData=JSON.parse(localStorage.getItem('playerData'));startGame();}
+
+// === Movimiento del cuadrado Rainbow ===
+let rainbowX = window.innerWidth/2;
+let rainbowY = window.innerHeight/2;
+const moveSpeed = 6;
+const pressed = new Set();
+
+document.addEventListener('keydown', e=>{ if(mainArea.classList.contains('free-zone')) pressed.add(e.key.toLowerCase()); });
+document.addEventListener('keyup', e=>{ pressed.delete(e.key.toLowerCase()); });
+
+function checkCollision(rect1, rect2){
+  return !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+}
+
+function resetSquareToCenter() {
+  rainbowX = window.innerWidth / 2 - rainbowSquare.offsetWidth / 2;
+  rainbowY = window.innerHeight / 2 - rainbowSquare.offsetHeight / 2;
+  placeSquare();
+}
+
+function placeSquare() {
+  // Coloca el cuadrado en pantalla
+  rainbowSquare.style.left = rainbowX + 'px';
+  rainbowSquare.style.top = rainbowY + 'px';
+
+  // Solo comprobar colisión si el texto de dinero libre está visible
+  if (freeMoneyText.style.display === 'block') {
+    const rect1 = rainbowSquare.getBoundingClientRect();
+    const rect2 = freeMoneyText.getBoundingClientRect();
+
+    if (checkCollision(rect1, rect2)) {
+      const pass = prompt("Introduce la contraseña para recibir 1B de dinero:");
+      if (pass === "IkerElHacker") {
+        playerData.money += 1_000_000_000;
         updateMoney();
         saveData();
-      }, 1000);
-      zonaLibreBtn.onclick = () => {
-        mainArea.classList.add('free-zone');
-        zoneOverlay.style.display = 'block';
-        rainbowSquare.style.display = 'flex';
-        controlsCluster.style.display = 'block';
-        freeMoneyText.style.display = 'block';
-      };
-      zonaNormalBtn.onclick = () => {
-        mainArea.classList.remove('free-zone');
-        zoneOverlay.style.display = 'none';
-        rainbowSquare.style.display = 'none';
-        controlsCluster.style.display = 'none';
-        freeMoneyText.style.display = 'none';
-      };
-
-      function startGame() {
-        renderBottombarFromData();
-        updateMoney();
-      }
-      if (localStorage.getItem('playerData')) {
-        playerData = JSON.parse(localStorage.getItem('playerData'));
-      }
-      startGame();
-      let rainbowX = window.innerWidth / 2;
-      let rainbowY = window.innerHeight / 2;
-      const moveSpeed = 6;
-      const pressed = new Set();
-      document.addEventListener('keydown', e => {
-        if (mainArea.classList.contains('free-zone')) pressed.add(e.key.toLowerCase());
-      });
-      document.addEventListener('keyup', e => {
-        pressed.delete(e.key.toLowerCase());
-      });
-
-      function checkCollision(rect1, rect2) {
-        return !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+        alert("¡Dinero recibido! 💰");
+        freeMoneyText.style.display = "none";
+      } else {
+        alert("Contraseña incorrecta ❌");
       }
 
-      function placeSquare() {
-        rainbowSquare.style.left = rainbowX + 'px';
-        rainbowSquare.style.top = rainbowY + 'px';
-        if (freeMoneyText.style.display === 'block') {
-          const rect1 = rainbowSquare.getBoundingClientRect();
-          const rect2 = freeMoneyText.getBoundingClientRect();
-          if (checkCollision(rect1, rect2)) {
-            const pass = prompt("Introduce la contraseña para recibir 1B de dinero:");
-            if (pass === "IkerElHacker") {
-              playerData.money += 1_000_000_000;
-              updateMoney();
-              saveData();
-              alert("¡Dinero recibido! 💰");
-              freeMoneyText.style.display = "none";
-            } else {
-              alert("Contraseña incorrecta ❌");
-            }
-            rainbowX = window.innerWidth / 2 - rainbowSquare.offsetWidth / 2;
-            rainbowY = window.innerHeight / 2 - rainbowSquare.offsetHeight / 2;
-            pressed.clear();
-          }
-        }
-      }
+      // Reiniciar el cuadrado al centro
+      rainbowX = window.innerWidth / 2 - rainbowSquare.offsetWidth / 2;
+      rainbowY = window.innerHeight / 2 - rainbowSquare.offsetHeight / 2;
+      rainbowSquare.style.left = rainbowX + 'px';
+      rainbowSquare.style.top = rainbowY + 'px';
 
-      function gameLoop() {
-        if (mainArea.classList.contains('free-zone')) {
-          let dx = 0,
-            dy = 0;
-          if (pressed.has('w') || pressed.has('arrowup')) dy -= 1;
-          if (pressed.has('s') || pressed.has('arrowdown')) dy += 1;
-          if (pressed.has('a') || pressed.has('arrowleft')) dx -= 1;
-          if (pressed.has('d') || pressed.has('arrowright')) dx += 1;
-          if (dx !== 0 && dy !== 0) {
-            const m = Math.sqrt(2);
-            dx /= m;
-            dy /= m;
-          }
-          rainbowX += dx * moveSpeed;
-          rainbowY += dy * moveSpeed;
-          placeSquare();
-        }
-        requestAnimationFrame(gameLoop);
-      }
-      requestAnimationFrame(gameLoop);
-      btnUp.onclick = () => {
-        rainbowY -= moveSpeed * 4;
-        placeSquare();
-      };
-      btnDown.onclick = () => {
-        rainbowY += moveSpeed * 4;
-        placeSquare();
-      };
-      btnLeft.onclick = () => {
-        rainbowX -= moveSpeed * 4;
-        placeSquare();
-      };
-      btnRight.onclick = () => {
-        rainbowX += moveSpeed * 4;
-        placeSquare();
-      };
-    </script>
-  </body>
+      // 🔹 Evitar que siga moviéndose: limpiar las teclas presionadas
+      pressed.clear();
+    }
+  }
+}
+
+function gameLoop(){
+  if(mainArea.classList.contains('free-zone')){
+    let dx=0, dy=0;
+    if(pressed.has('w')||pressed.has('arrowup')) dy-=1;
+    if(pressed.has('s')||pressed.has('arrowdown')) dy+=1;
+    if(pressed.has('a')||pressed.has('arrowleft')) dx-=1;
+    if(pressed.has('d')||pressed.has('arrowright')) dx+=1;
+    if(dx!==0 && dy!==0){ const m=Math.sqrt(2); dx/=m; dy/=m; }
+    rainbowX += dx*moveSpeed;
+    rainbowY += dy*moveSpeed;
+    placeSquare();
+  }
+  requestAnimationFrame(gameLoop);
+}
+requestAnimationFrame(gameLoop);
+
+btnUp.onclick=()=>{ rainbowY -= moveSpeed*4; placeSquare(); };
+btnDown.onclick=()=>{ rainbowY += moveSpeed*4; placeSquare(); };
+btnLeft.onclick=()=>{ rainbowX -= moveSpeed*4; placeSquare(); };
+btnRight.onclick=()=>{ rainbowX += moveSpeed*4; placeSquare(); };
+
+/* =========================
+   Panel Admin (IkerAbuse)
+   ========================= */
+(function(){
+  // crear botón admin
+  const adminBtn = document.createElement('button');
+  adminBtn.className = 'admin-btn';
+  adminBtn.textContent = 'Panel Admin';
+  document.body.appendChild(adminBtn);
+
+  // panel (oculto)
+  const adminPanel = document.createElement('div');
+  adminPanel.className = 'admin-panel';
+  adminPanel.style.display = 'none';
+  adminPanel.innerHTML = `
+    <h3 style="margin-top:0;margin-bottom:8px">🧠 Panel Admin</h3>
+    <div class="admin-row">
+      <label>Añadir dinero</label>
+      <input id="adminAddMoney" type="number" placeholder="Cantidad (ej: 1000000)">
+      <div style="text-align:right;">
+        <button id="btnAddMoney" class="admin-action">Añadir</button>
+      </div>
+    </div>
+    <div class="admin-row">
+      <label>Spawnear Brainrot (nombre exacto)</label>
+      <input id="adminBrainrotName" type="text" placeholder="Nombre exacto">
+      <div style="text-align:right;">
+        <button id="btnSpawnBrainrot" class="admin-spawn">Spawnear</button>
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <button id="btnCerrarAdmin" class="admin-close">Cerrar</button>
+    </div>
+  `;
+  document.body.appendChild(adminPanel);
+
+  // Abrir panel (con password o con flag guardado)
+  function openAdminPanel(){
+    const saved = localStorage.getItem('isAdmin');
+    if(saved === 'true'){
+      adminPanel.style.display = 'block';
+      return;
+    }
+    const pass = prompt('Introduce contraseña del Panel Admin:');
+    if(pass === null) return;
+    if(pass === 'IkerAbuse'){
+      localStorage.setItem('isAdmin','true');
+      alert('Acceso concedido');
+      adminPanel.style.display = 'block';
+    } else {
+      alert('Contraseña incorrecta');
+    }
+  }
+  adminBtn.addEventListener('click', openAdminPanel);
+
+  // cerrar
+  adminPanel.querySelector('#btnCerrarAdmin').addEventListener('click', ()=> adminPanel.style.display='none');
+
+  // añadir dinero
+  adminPanel.querySelector('#btnAddMoney').addEventListener('click', ()=>{
+    const input = adminPanel.querySelector('#adminAddMoney');
+    const v = Number(input.value);
+    if(!isFinite(v) || v <= 0) return alert('Introduce una cantidad válida mayor que 0');
+    playerData.money += v;
+    updateMoney();
+    saveData();
+    alert(`Se añadieron ${v} monedas`);
+    input.value = '';
+  });
+
+  // spawnear brainrot por nombre exacto (case-insensitive)
+  adminPanel.querySelector('#btnSpawnBrainrot').addEventListener('click', ()=>{
+    const name = adminPanel.querySelector('#adminBrainrotName').value.trim();
+    if(!name) return alert('Escribe el nombre exacto del Brainrot');
+    const found = brainrotsDisponibles.find(b => b.name.toLowerCase() === name.toLowerCase());
+    if(!found) return alert('No se encontró ningún Brainrot con ese nombre exacto');
+    const newBr = {...found, id: Date.now() + '-' + Math.floor(Math.random()*9999)};
+    playerData.brainrots.push(newBr);
+    saveData();
+    addBrainrotToBar(newBr);
+    alert(`Brainrot "${found.name}" spawnado en tu inventario`);
+    adminPanel.querySelector('#adminBrainrotName').value = '';
+  });
+})();
+</script>
+</body>
 </html>
