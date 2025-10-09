@@ -556,84 +556,6 @@ zonaNormalBtn.onclick=()=>{
   freeMoneyText.style.display='none';
 };
 
-function startGame(){loginDiv.style.display='none';renderBottombarFromData();updateMoney();}
-loginBtn.onclick=()=>{if(!usernameInput.value)return;playerData.username=usernameInput.value;saveData();startGame();}
-if(localStorage.getItem('playerData')){playerData=JSON.parse(localStorage.getItem('playerData'));startGame();}
-
-// === Movimiento del cuadrado Rainbow ===
-let rainbowX = window.innerWidth/2;
-let rainbowY = window.innerHeight/2;
-const moveSpeed = 6;
-const pressed = new Set();
-
-document.addEventListener('keydown', e=>{ if(mainArea.classList.contains('free-zone')) pressed.add(e.key.toLowerCase()); });
-document.addEventListener('keyup', e=>{ pressed.delete(e.key.toLowerCase()); });
-
-function checkCollision(rect1, rect2){
-  return !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
-}
-
-function resetSquareToCenter() {
-  rainbowX = window.innerWidth / 2 - rainbowSquare.offsetWidth / 2;
-  rainbowY = window.innerHeight / 2 - rainbowSquare.offsetHeight / 2;
-  placeSquare();
-}
-
-function placeSquare() {
-  // Coloca el cuadrado en pantalla
-  rainbowSquare.style.left = rainbowX + 'px';
-  rainbowSquare.style.top = rainbowY + 'px';
-
-  // Solo comprobar colisión si el texto de dinero libre está visible
-  if (freeMoneyText.style.display === 'block') {
-    const rect1 = rainbowSquare.getBoundingClientRect();
-    const rect2 = freeMoneyText.getBoundingClientRect();
-
-    if (checkCollision(rect1, rect2)) {
-      const pass = prompt("Introduce la contraseña para recibir 1B de dinero:");
-      if (pass === "IkerElHacker") {
-        playerData.money += 1_000_000_000;
-        updateMoney();
-        saveData();
-        alert("¡Dinero recibido! 💰");
-        freeMoneyText.style.display = "none";
-      } else {
-        alert("Contraseña incorrecta ❌");
-      }
-
-      // Reiniciar el cuadrado al centro
-      rainbowX = window.innerWidth / 2 - rainbowSquare.offsetWidth / 2;
-      rainbowY = window.innerHeight / 2 - rainbowSquare.offsetHeight / 2;
-      rainbowSquare.style.left = rainbowX + 'px';
-      rainbowSquare.style.top = rainbowY + 'px';
-
-      // 🔹 Evitar que siga moviéndose: limpiar las teclas presionadas
-      pressed.clear();
-    }
-  }
-}
-
-function gameLoop(){
-  if(mainArea.classList.contains('free-zone')){
-    let dx=0, dy=0;
-    if(pressed.has('w')||pressed.has('arrowup')) dy-=1;
-    if(pressed.has('s')||pressed.has('arrowdown')) dy+=1;
-    if(pressed.has('a')||pressed.has('arrowleft')) dx-=1;
-    if(pressed.has('d')||pressed.has('arrowright')) dx+=1;
-    if(dx!==0 && dy!==0){ const m=Math.sqrt(2); dx/=m; dy/=m; }
-    rainbowX += dx*moveSpeed;
-    rainbowY += dy*moveSpeed;
-    placeSquare();
-  }
-  requestAnimationFrame(gameLoop);
-}
-requestAnimationFrame(gameLoop);
-
-btnUp.onclick=()=>{ rainbowY -= moveSpeed*4; placeSquare(); };
-btnDown.onclick=()=>{ rainbowY += moveSpeed*4; placeSquare(); };
-btnLeft.onclick=()=>{ rainbowX -= moveSpeed*4; placeSquare(); };
-btnRight.onclick=()=>{ rainbowX += moveSpeed*4; placeSquare(); };
-
   <!-- === PANEL DE CUSTOMIZACIÓN === -->
 <div id="customPanel" style="
   position: fixed;
@@ -686,8 +608,6 @@ btnRight.onclick=()=>{ rainbowX += moveSpeed*4; placeSquare(); };
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 ">🎨 Customizar</button>
-
-<script>
 // === CUSTOMIZACIÓN ===
 const openCustomBtn = document.getElementById('openCustomBtn');
 const customPanel = document.getElementById('customPanel');
@@ -769,6 +689,84 @@ function applySkin() {
   rainbowSquare.style.height = '64px';
 }
 applySkin();
+
+function startGame(){loginDiv.style.display='none';renderBottombarFromData();updateMoney();}
+loginBtn.onclick=()=>{if(!usernameInput.value)return;playerData.username=usernameInput.value;saveData();startGame();}
+if(localStorage.getItem('playerData')){playerData=JSON.parse(localStorage.getItem('playerData'));startGame();}
+
+// === Movimiento del cuadrado Rainbow ===
+let rainbowX = window.innerWidth/2;
+let rainbowY = window.innerHeight/2;
+const moveSpeed = 6;
+const pressed = new Set();
+
+document.addEventListener('keydown', e=>{ if(mainArea.classList.contains('free-zone')) pressed.add(e.key.toLowerCase()); });
+document.addEventListener('keyup', e=>{ pressed.delete(e.key.toLowerCase()); });
+
+function checkCollision(rect1, rect2){
+  return !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+}
+
+function resetSquareToCenter() {
+  rainbowX = window.innerWidth / 2 - rainbowSquare.offsetWidth / 2;
+  rainbowY = window.innerHeight / 2 - rainbowSquare.offsetHeight / 2;
+  placeSquare();
+}
+
+function placeSquare() {
+  // Coloca el cuadrado en pantalla
+  rainbowSquare.style.left = rainbowX + 'px';
+  rainbowSquare.style.top = rainbowY + 'px';
+
+  // Solo comprobar colisión si el texto de dinero libre está visible
+  if (freeMoneyText.style.display === 'block') {
+    const rect1 = rainbowSquare.getBoundingClientRect();
+    const rect2 = freeMoneyText.getBoundingClientRect();
+
+    if (checkCollision(rect1, rect2)) {
+      const pass = prompt("Introduce la contraseña para recibir 1B de dinero:");
+      if (pass === "IkerElHacker") {
+        playerData.money += 1_000_000_000;
+        updateMoney();
+        saveData();
+        alert("¡Dinero recibido! 💰");
+        freeMoneyText.style.display = "none";
+      } else {
+        alert("Contraseña incorrecta ❌");
+      }
+
+      // Reiniciar el cuadrado al centro
+      rainbowX = window.innerWidth / 2 - rainbowSquare.offsetWidth / 2;
+      rainbowY = window.innerHeight / 2 - rainbowSquare.offsetHeight / 2;
+      rainbowSquare.style.left = rainbowX + 'px';
+      rainbowSquare.style.top = rainbowY + 'px';
+
+      // 🔹 Evitar que siga moviéndose: limpiar las teclas presionadas
+      pressed.clear();
+    }
+  }
+}
+
+function gameLoop(){
+  if(mainArea.classList.contains('free-zone')){
+    let dx=0, dy=0;
+    if(pressed.has('w')||pressed.has('arrowup')) dy-=1;
+    if(pressed.has('s')||pressed.has('arrowdown')) dy+=1;
+    if(pressed.has('a')||pressed.has('arrowleft')) dx-=1;
+    if(pressed.has('d')||pressed.has('arrowright')) dx+=1;
+    if(dx!==0 && dy!==0){ const m=Math.sqrt(2); dx/=m; dy/=m; }
+    rainbowX += dx*moveSpeed;
+    rainbowY += dy*moveSpeed;
+    placeSquare();
+  }
+  requestAnimationFrame(gameLoop);
+}
+requestAnimationFrame(gameLoop);
+
+btnUp.onclick=()=>{ rainbowY -= moveSpeed*4; placeSquare(); };
+btnDown.onclick=()=>{ rainbowY += moveSpeed*4; placeSquare(); };
+btnLeft.onclick=()=>{ rainbowX -= moveSpeed*4; placeSquare(); };
+btnRight.onclick=()=>{ rainbowX += moveSpeed*4; placeSquare(); };
 </script>
 </body>
 </html>
