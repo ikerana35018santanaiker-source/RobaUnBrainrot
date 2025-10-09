@@ -23,15 +23,6 @@
     color:var(--text);
     overflow:hidden;
   }
-  #login{
-    position:fixed;
-    inset:0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:1000;
-    backdrop-filter: blur(6px);
-  }
   .login-card{
     width:360px;
     padding:24px;
@@ -207,14 +198,6 @@
 </style>
 </head>
 <body>
-
-<div id="login">
-  <div class="login-card">
-    <h2>Steal a Brainrot</h2>
-    <input id="username" placeholder="Nombre de usuario" />
-    <br /><button id="loginBtn" class="btn btn-primary">Iniciar sesión</button>
-  </div>
-</div>
 
 <button id="zonaNormalBtn">Zona Normal</button>
 <button id="zonaLibreBtn">Zona Libre</button>
