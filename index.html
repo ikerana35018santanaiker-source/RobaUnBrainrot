@@ -79,7 +79,7 @@ html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verd
   <div id="profile">
     <img id="profile-pic" src="">
     <span id="profile-name"></span><br>
-    <button onclick="changeName()">✏️ Cambiar nombre</button>
+    <button id="btn-change-name">✏️ Cambiar nombre</button>
   </div>
 </div>
 
@@ -167,23 +167,20 @@ async function updateTexts(){
     search:"Buscar lugar", from:"Desde", to:"Hasta", route:"🚗 Obtener direcciones",
     speak:"🔊 Escuchar indicaciones", locate:"📍 Mi ubicación", dark:"🌙 Modo oscuro",
     sat:"🛰 Satélite", poi:"📌 Mostrar lugares", infoDefault:"Las indicaciones aparecerán aquí.",
-    login:"🔑 Iniciar sesión con Google", language:"🌐 Español / English"
+    login:"🔑 Iniciar sesión con Google", language:"🌐 Español / English",
+    changeName:"✏️ Cambiar nombre"
   };
-  if(idioma==='es'){
-    for(let key in textsES) document.getElementById(`btn-${key}`)?document.getElementById(`btn-${key}`).innerText=textsES[key]:0;
-    document.getElementById('search').placeholder=textsES.search;
-    document.getElementById('from').placeholder=textsES.from;
-    document.getElementById('to').placeholder=textsES.to;
-    document.getElementById('info').innerText=textsES.infoDefault;
-  } else {
-    for(let key in textsES){
-      if(document.getElementById(`btn-${key}`)) translateText(textsES[key],'en').then(t=>document.getElementById(`btn-${key}`).innerText=t);
+  for(let key in textsES){
+    const el = document.getElementById(`btn-${key}`)||document.getElementById('btn-change-name');
+    if(el){
+      if(idioma==='es') el.innerText=textsES[key];
+      else el.innerText = await translateText(textsES[key],'en');
     }
-    document.getElementById('search').placeholder = await translateText(textsES.search,'en');
-    document.getElementById('from').placeholder = await translateText(textsES.from,'en');
-    document.getElementById('to').placeholder = await translateText(textsES.to,'en');
-    document.getElementById('info').innerText = await translateText(textsES.infoDefault,'en');
   }
+  document.getElementById('search').placeholder = idioma==='es'?textsES.search:await translateText(textsES.search,'en');
+  document.getElementById('from').placeholder = idioma==='es'?textsES.from:await translateText(textsES.from,'en');
+  document.getElementById('to').placeholder = idioma==='es'?textsES.to:await translateText(textsES.to,'en');
+  document.getElementById('info').innerText = idioma==='es'?textsES.infoDefault:await translateText(textsES.infoDefault,'en');
 }
 
 // Inicializamos textos
@@ -252,13 +249,20 @@ async function loadPOIs(){
   const url='https://overpass-api.de/api/interpreter?data='+encodeURIComponent(query);
   const res=await fetch(url);
   const data=await res.json();
-  data.elements.forEach(e=>{
+  data.elements.forEach(async e=>{
     if(e.lat&&e.lon){
       const id=e.id;
-      const name=e.tags.name || (idioma==='es'?"Sin nombre":"Unnamed");
-      const type=e.tags.amenity || e.tags.shop || e.tags.tourism || (idioma==='es'?"Lugar":"Place");
-      const m=L.marker([e.lat,e.lon]).addTo(poiLayer);
-      m.bindPopup(`<b>${name}</b><br>${type}<br><button onclick="addReview('${id}','${name}')">${idioma==='es'?'Escribir reseña':'Write review'}</button><div id="reviews-${id}"></div>`);
+      const name = e.tags.name || (idioma==='es'?"Sin nombre":"Unnamed");
+      const type = e.tags.amenity || e.tags.shop || e.tags.tourism || (idioma==='es'?"Lugar":"Place");
+      const m = L.marker([e.lat,e.lon]).addTo(poiLayer);
+      let translatedName = name;
+      let translatedType = type;
+      if(idioma!=='es'){
+        translatedName = await translateText(name,'en');
+        translatedType = await translateText(type,'en');
+      }
+      const popupHTML=`<b>${translatedName}</b><br>${translatedType}<br><button onclick="addReview('${id}','${translatedName}')">${idioma==='es'?'Escribir reseña':'Write review'}</button><div id="reviews-${id}"></div>`;
+      m.bindPopup(popupHTML);
       loadReviews(id);
     }
   });
@@ -289,14 +293,16 @@ function loadReviews(poiId){
 }
 
 // ---------- Asignar eventos a botones ----------
-document.getElementById('btn-search').onclick=searchPlace;
-document.getElementById('btn-route').onclick=route;
-document.getElementById('btn-speak').onclick=readDirections;
-document.getElementById('btn-locate').onclick=locate;
-document.getElementById('btn-dark').onclick=toggleDark;
-document.getElementById('btn-sat').onclick=toggleSatellite;
-document.getElementById('btn-poi').onclick=loadPOIs;
-
+document.getElementById('btn-search').addEventListener('click', searchPlace);
+document.getElementById('btn-route').addEventListener('click', route);
+document.getElementById('btn-speak').addEventListener('click', readDirections);
+document.getElementById('btn-locate').addEventListener('click', locate);
+document.getElementById('btn-dark').addEventListener('click', toggleDark);
+document.getElementById('btn-sat').addEventListener('click', toggleSatellite);
+document.getElementById('btn-poi').addEventListener('click', loadPOIs);
+document.getElementById('btn-login').addEventListener('click', loginGoogle);
+document.getElementById('btn-language').addEventListener('click', toggleLanguage);
+document.getElementById('btn-change-name').addEventListener('click', changeName);
 </script>
 </body>
 </html>
