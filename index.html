@@ -37,13 +37,6 @@ html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verd
   background:#f9f9f9; border-radius:6px; border:1px solid #ddd;
 }
 
-/* Street-view simulado */
-#streetView {
-  position:absolute; top:0; right:0; width:50%; height:50%;
-  display:none; z-index:900; border:2px solid #333;
-  background-size:cover; background-position:center; border-radius:8px;
-}
-
 /* Panel superior derecho: ajustes y login */
 .top-right {
   position:absolute; top:10px; right:10px;
@@ -58,7 +51,6 @@ html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verd
 <body>
 
 <div id="map"></div>
-<div id="streetView"></div>
 
 <!-- Panel lateral izquierdo -->
 <div class="panel">
@@ -71,7 +63,6 @@ html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verd
   <button id="btn-locate" onclick="locate()">📍 Mi ubicación</button>
   <button id="btn-dark" onclick="toggleDark()">🌙 Modo oscuro</button>
   <button id="btn-sat" onclick="toggleSatellite()">🛰 Satélite</button>
-  <button id="btn-street" onclick="toggleStreetView()">🏙 Vista calle</button>
   <button id="btn-poi" onclick="loadPOIs()">📌 Mostrar lugares</button>
   <div class="info" id="info">Las indicaciones aparecerán aquí.</div>
 </div>
@@ -80,11 +71,17 @@ html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verd
 <div class="top-right">
   <button id="btn-language" onclick="toggleLanguage()">🌐 Español / English</button>
   <button id="btn-login" onclick="loginGoogle()">🔑 Iniciar sesión con Google</button>
+  <div id="profile" style="background:#f0f0f0;padding:6px;border-radius:6px;display:none;">
+    <img id="profile-pic" src="" style="width:40px;height:40px;border-radius:50%;vertical-align:middle">
+    <span id="profile-name"></span>
+    <button onclick="changeName()">✏️ Cambiar nombre</button>
+  </div>
 </div>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -102,73 +99,78 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.database();
 
+// Variables
+let idioma = 'es';
+let lastSteps = [];
+let marker, routeLine, poiLayer = L.layerGroup().addTo(map);
+
+// Traducción con LibreTranslate
+async function translateText(text, targetLang){
+  try {
+    const res = await fetch('https://libretranslate.com/translate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({q:text, source:'es', target:targetLang, format:'text'})
+    });
+    const data = await res.json();
+    return data.translatedText;
+  } catch(e){ return text; }
+}
+
+// Login Google
 function loginGoogle(){
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider)
-    .then(result => alert(`${idioma==='es'?'Bienvenido':'Welcome'} ${result.user.displayName}`))
-    .catch(error => alert(`Error: ${error.message}`));
+    .then(result=>{
+      document.getElementById('profile').style.display='block';
+      document.getElementById('profile-name').innerText=result.user.displayName;
+      document.getElementById('profile-pic').src=result.user.photoURL;
+      alert(`${idioma==='es'?'Bienvenido':'Welcome'} ${result.user.displayName}`);
+    }).catch(e=>alert(`Error: ${e.message}`));
 }
 
-// Traducción de interfaz
-let idioma = 'es';
-function toggleLanguage(){
+// Cambiar nombre
+function changeName(){
+  const newName = prompt(idioma==='es'?'Ingresa tu nuevo nombre':'Enter your new name');
+  if(newName && auth.currentUser){
+    auth.currentUser.updateProfile({displayName:newName}).then(()=>{
+      document.getElementById('profile-name').innerText=newName;
+    });
+  }
+}
+
+// Traducción de botones
+async function toggleLanguage(){
   idioma = idioma==='es'?'en':'es';
   updateTexts();
 }
-
-function updateTexts(){
-  const t = {
-    es: {
-      search: "Buscar lugar",
-      from: "Desde",
-      to: "Hasta",
-      route: "🚗 Obtener direcciones",
-      speak: "🔊 Escuchar indicaciones",
-      locate: "📍 Mi ubicación",
-      dark: "🌙 Modo oscuro",
-      sat: "🛰 Satélite",
-      street: "🏙 Vista calle",
-      poi: "📌 Mostrar lugares",
-      infoDefault: "Las indicaciones aparecerán aquí.",
-      login: "🔑 Iniciar sesión con Google",
-      language: "🌐 Español / English"
-    },
-    en: {
-      search: "Search place",
-      from: "From",
-      to: "To",
-      route: "🚗 Get directions",
-      speak: "🔊 Listen instructions",
-      locate: "📍 My location",
-      dark: "🌙 Dark mode",
-      sat: "🛰 Satellite",
-      street: "🏙 Street view",
-      poi: "📌 Show places",
-      infoDefault: "Directions will appear here.",
-      login: "🔑 Sign in with Google",
-      language: "🌐 Spanish / English"
-    }
+async function updateTexts(){
+  const textsES = {
+    search:"Buscar lugar", from:"Desde", to:"Hasta", route:"🚗 Obtener direcciones",
+    speak:"🔊 Escuchar indicaciones", locate:"📍 Mi ubicación", dark:"🌙 Modo oscuro",
+    sat:"🛰 Satélite", poi:"📌 Mostrar lugares", infoDefault:"Las indicaciones aparecerán aquí.",
+    login:"🔑 Iniciar sesión con Google", language:"🌐 Español / English"
   };
-  document.getElementById("search").placeholder = t[idioma].search;
-  document.getElementById("from").placeholder = t[idioma].from;
-  document.getElementById("to").placeholder = t[idioma].to;
-  document.getElementById("btn-route").innerText = t[idioma].route;
-  document.getElementById("btn-speak").innerText = t[idioma].speak;
-  document.getElementById("btn-locate").innerText = t[idioma].locate;
-  document.getElementById("btn-dark").innerText = t[idioma].dark;
-  document.getElementById("btn-sat").innerText = t[idioma].sat;
-  document.getElementById("btn-street").innerText = t[idioma].street;
-  document.getElementById("btn-poi").innerText = t[idioma].poi;
-  document.getElementById("info").innerText = t[idioma].infoDefault;
-  document.getElementById("btn-login").innerText = t[idioma].login;
-  document.getElementById("btn-language").innerText = t[idioma].language;
+  if(idioma==='es'){
+    for(let key in textsES) document.getElementById(`btn-${key}`)?document.getElementById(`btn-${key}`).innerText=textsES[key]:0;
+    document.getElementById('search').placeholder=textsES.search;
+    document.getElementById('from').placeholder=textsES.from;
+    document.getElementById('to').placeholder=textsES.to;
+    document.getElementById('info').innerText=textsES.infoDefault;
+  } else {
+    for(let key in textsES){
+      document.getElementById(`btn-${key}`)?translateText(textsES[key],'en').then(t=>document.getElementById(`btn-${key}`).innerText=t):0;
+    }
+    document.getElementById('search').placeholder = await translateText(textsES.search,'en');
+    document.getElementById('from').placeholder = await translateText(textsES.from,'en');
+    document.getElementById('to').placeholder = await translateText(textsES.to,'en');
+    document.getElementById('info').innerText = await translateText(textsES.infoDefault,'en');
+  }
 }
 
-// Inicializamos textos
-updateTexts();
-
-// Mapa Leaflet
+// Mapa
 let map = L.map("map").setView([40.4168,-3.7038],13);
 const normalLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19, attribution:"© OSM"});
 const darkLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19});
@@ -176,15 +178,9 @@ const satelliteLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/
 normalLayer.addTo(map);
 let currentLayer="normal";
 
-let marker, routeLine;
-let streetVisible=false;
-let poiLayer = L.layerGroup().addTo(map);
-let lastSteps = [];
-
-// Funciones principales
-async function searchPlace(){
-  const q=document.getElementById("search").value;
-  if(!q) return;
+// Funciones básicas
+async function searchPlace(){ 
+  const q=document.getElementById("search").value; if(!q) return;
   const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}`);
   const data=await res.json();
   if(!data[0]) return;
@@ -215,61 +211,27 @@ async function route(){
   routeLine=L.polyline(coords,{weight:5,color:"#007bff"}).addTo(map);
   map.fitBounds(routeLine.getBounds());
 
-  // Pasos legibles según idioma
+  // Indicaciones
   const steps = routeData.legs[0].steps.map((s,i)=>{
-    const tipo = s.maneuver.type || '';
-    const mod = s.maneuver.modifier ? ` (${s.maneuver.modifier})` : '';
-    const calle = s.name || '';
+    const tipo = s.maneuver.type||'';
+    const mod = s.maneuver.modifier ? ` (${s.maneuver.modifier})`:'';
+    const calle = s.name||'';
     return idioma==='es'? `${i+1}. ${tipo}${mod} en ${calle}` : `${i+1}. ${tipo}${mod} on ${calle}`;
   });
-  lastSteps = steps;
-  document.getElementById("info").innerHTML = `<b>${idioma==='es'?'Indicaciones':'Directions'}:</b><br>` + steps.join("<br>");
+  lastSteps=steps;
+  document.getElementById("info").innerHTML=`<b>${idioma==='es'?'Indicaciones':'Directions'}:</b><br>`+steps.join("<br>");
 }
 
-function readDirections(){
-  if(lastSteps.length === 0) return;
-  if('speechSynthesis' in window){
-    speechSynthesis.cancel();
-    lastSteps.forEach(step => speechSynthesis.speak(new SpeechSynthesisUtterance(step)));
-  }
-}
+function readDirections(){ if(lastSteps.length===0) return; if('speechSynthesis' in window){ speechSynthesis.cancel(); lastSteps.forEach(s=>speechSynthesis.speak(new SpeechSynthesisUtterance(s))); } }
+function locate(){ map.locate({setView:true,maxZoom:16}); map.on("locationfound",e=>{ L.marker(e.latlng).addTo(map).bindPopup(idioma==='es'?"Tú estás aquí":"You are here").openPopup(); }); }
+function toggleDark(){ map.eachLayer(l=>map.removeLayer(l)); currentLayer=currentLayer==="dark"?"normal":"dark"; (currentLayer==="dark"?darkLayer:normalLayer).addTo(map); }
+function toggleSatellite(){ map.eachLayer(l=>map.removeLayer(l)); satelliteLayer.addTo(map); currentLayer="satellite"; }
 
-function locate(){
-  map.locate({setView:true,maxZoom:16});
-  map.on("locationfound",e=>{
-    L.marker(e.latlng).addTo(map).bindPopup(idioma==='es'?"Tú estás aquí":"You are here").openPopup();
-  });
-}
-
-function toggleDark(){
-  map.eachLayer(l=>map.removeLayer(l));
-  currentLayer=currentLayer==="dark"?"normal":"dark";
-  (currentLayer==="dark"?darkLayer:normalLayer).addTo(map);
-}
-function toggleSatellite(){
-  map.eachLayer(l=>map.removeLayer(l));
-  satelliteLayer.addTo(map);
-  currentLayer="satellite";
-}
-
-function toggleStreetView(){
-  streetVisible=!streetVisible;
-  const div=document.getElementById("streetView");
-  if(streetVisible){
-    div.style.display="block";
-    div.style.backgroundImage="url('street.jpg')";
-  } else div.style.display="none";
-}
-
-map.on("click",e=>{
-  if(marker) marker.setLatLng(e.latlng);
-  else marker=L.marker(e.latlng).addTo(map);
-});
-
+// POIs con reseñas
 async function loadPOIs(){
   poiLayer.clearLayers();
-  const bbox = map.getBounds();
-  const query = `[out:json][timeout:25];
+  const bbox=map.getBounds();
+  const query=`[out:json][timeout:25];
     (
       node["amenity"="restaurant"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
       node["amenity"="cafe"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
@@ -277,19 +239,44 @@ async function loadPOIs(){
       node["shop"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
     );
     out body;`;
-  const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
-  const res = await fetch(url);
-  const data = await res.json();
+  const url='https://overpass-api.de/api/interpreter?data='+encodeURIComponent(query);
+  const res=await fetch(url);
+  const data=await res.json();
   data.elements.forEach(e=>{
-    if(e.lat && e.lon){
+    if(e.lat&&e.lon){
+      const id=e.id;
       const name = e.tags.name || (idioma==='es'?"Sin nombre":"Unnamed");
       const type = e.tags.amenity || e.tags.shop || e.tags.tourism || (idioma==='es'?"Lugar":"Place");
-      L.marker([e.lat,e.lon]).addTo(poiLayer)
-        .bindPopup(`<b>${name}</b><br>${type}`);
+      const m = L.marker([e.lat,e.lon]).addTo(poiLayer);
+      m.bindPopup(`<b>${name}</b><br>${type}<br><button onclick="addReview('${id}','${name}')">${idioma==='es'?'Escribir reseña':'Write review'}</button><div id="reviews-${id}"></div>`);
+      loadReviews(id);
     }
   });
 }
-</script>
 
+// Añadir reseña
+function addReview(poiId, poiName){
+  if(!auth.currentUser){ alert(idioma==='es'?'Inicia sesión primero':'Sign in first'); return; }
+  const text=prompt(idioma==='es'?`Escribe tu reseña para ${poiName}`:`Write your review for ${poiName}`);
+  if(!text) return;
+  const review = {user:auth.currentUser.displayName,text,time:Date.now()};
+  db.ref('reviews/'+poiId).push(review);
+  loadReviews(poiId);
+}
+
+// Cargar reseñas
+function loadReviews(poiId){
+  const div=document.getElementById(`reviews-${poiId}`);
+  div.innerHTML='';
+  db.ref('reviews/'+poiId).once('value',snapshot=>{
+    snapshot.forEach(child=>{
+      const r = child.val();
+      const date = new Date(r.time).toLocaleString();
+      div.innerHTML+=`<div style="border-top:1px solid #ccc;padding:2px;"><b>${r.user}</b>: ${r.text} <br><small>${date}</small></div>`;
+    });
+  });
+}
+
+</script>
 </body>
 </html>
