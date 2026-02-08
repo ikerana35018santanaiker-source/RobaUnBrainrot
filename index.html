@@ -10,46 +10,15 @@
 <style>
 html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 #map { height:100%; }
-
-/* Panel lateral izquierdo */
-.panel {
-  position:absolute; top:10px; left:10px;
-  background:white; padding:12px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.25);
-  z-index:1000; width:300px;
-}
-.panel input, .panel button {
-  width:100%; margin-bottom:8px; padding:8px 10px;
-  border-radius:6px; border:1px solid #ccc; font-size:14px;
-  outline:none; transition:0.2s;
-}
+.panel { position:absolute; top:10px; left:10px; background:white; padding:12px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.25); z-index:1000; width:300px; }
+.panel input, .panel button { width:100%; margin-bottom:8px; padding:8px 10px; border-radius:6px; border:1px solid #ccc; font-size:14px; outline:none; transition:0.2s; }
 .panel input:focus { border-color:#007bff; }
-.panel button {
-  background:#007bff; color:white; border:none; cursor:pointer; font-weight:bold;
-}
+.panel button { background:#007bff; color:white; border:none; cursor:pointer; font-weight:bold; }
 .panel button:hover { background:#0056b3; }
-
-/* Información de instrucciones */
-.info {
-  font-size:13px; margin-top:6px;
-  max-height:200px; overflow-y:auto; padding:6px;
-  background:#f9f9f9; border-radius:6px; border:1px solid #ddd;
-}
-
-/* Panel superior derecho: ajustes y login */
-.top-right {
-  position:absolute; top:10px; right:10px;
-  z-index:1000;
-  display:flex; flex-direction:column; gap:6px;
-}
-.top-right button {
-  width:160px; font-size:13px; padding:6px 8px;
-}
-#profile{
-  background:#f0f0f0;padding:6px;border-radius:6px;display:none;
-  text-align:center;
-}
+.info { font-size:13px; margin-top:6px; max-height:200px; overflow-y:auto; padding:6px; background:#f9f9f9; border-radius:6px; border:1px solid #ddd; }
+.top-right { position:absolute; top:10px; right:10px; z-index:1000; display:flex; flex-direction:column; gap:6px; }
+.top-right button { width:160px; font-size:13px; padding:6px 8px; }
+#profile{ background:#f0f0f0;padding:6px;border-radius:6px;display:none; text-align:center; }
 #profile img{ width:40px;height:40px;border-radius:50%;vertical-align:middle; margin-right:6px;}
 </style>
 </head>
@@ -57,7 +26,6 @@ html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verd
 
 <div id="map"></div>
 
-<!-- Panel lateral izquierdo -->
 <div class="panel">
   <input id="search" placeholder="Buscar lugar">
   <button id="btn-search">🔍 Buscar</button>
@@ -72,7 +40,6 @@ html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verd
   <div class="info" id="info">Las indicaciones aparecerán aquí.</div>
 </div>
 
-<!-- Panel superior derecho -->
 <div class="top-right">
   <button id="btn-language">🌐 Español / English</button>
   <button id="btn-login">🔑 Iniciar sesión con Google</button>
@@ -83,16 +50,13 @@ html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verd
   </div>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-<!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-// ---------- Inicialización Firebase ----------
+// ---------- Firebase ----------
 const firebaseConfig = {
   apiKey: "AIzaSyDiGY9FOUFwYYtyF9QGA53f4jh2rT1jab8",
   authDomain: "ikendo-49e0c.firebaseapp.com",
@@ -107,83 +71,97 @@ const auth = firebase.auth();
 const db = firebase.database();
 
 // ---------- Variables ----------
-let idioma='es';
-let lastSteps=[];
+let idioma = localStorage.getItem('idioma') || 'es';
+let lastSteps = [];
 let marker, routeLine;
 let poiLayer;
 
-// ---------- Inicialización Mapa ----------
+// ---------- Mapa ----------
 let map = L.map("map").setView([40.4168,-3.7038],13);
 const normalLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19, attribution:"© OSM"});
 const darkLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19});
 const satelliteLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19});
 normalLayer.addTo(map);
-let currentLayer="normal";
-
-// POI layer
+let currentLayer = "normal";
 poiLayer = L.layerGroup().addTo(map);
 
-// ---------- Traducción con LibreTranslate ----------
+// ---------- Traducción ----------
 async function translateText(text,targetLang){
   try{
-    const res=await fetch('https://libretranslate.com/translate',{
+    const res = await fetch('https://libretranslate.com/translate',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({q:text, source:'es', target:targetLang, format:'text'})
     });
-    const data=await res.json();
+    const data = await res.json();
     return data.translatedText;
-  }catch(e){ return text; }
+  } catch(e){ return text; }
 }
 
 // ---------- Login Google ----------
+function showProfile(user){
+  document.getElementById('profile').style.display='block';
+  document.getElementById('profile-name').innerText = user.displayName;
+  document.getElementById('profile-pic').src = user.photoURL;
+}
 function loginGoogle(){
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider).then(result=>{
-    document.getElementById('profile').style.display='block';
-    document.getElementById('profile-name').innerText=result.user.displayName;
-    document.getElementById('profile-pic').src=result.user.photoURL;
+    localStorage.setItem('user', JSON.stringify({
+      displayName: result.user.displayName,
+      photoURL: result.user.photoURL,
+      uid: result.user.uid
+    }));
+    showProfile(result.user);
     alert(`${idioma==='es'?'Bienvenido':'Welcome'} ${result.user.displayName}`);
   }).catch(e=>alert(`Error: ${e.message}`));
 }
-
-// Cambiar nombre
 function changeName(){
-  const newName=prompt(idioma==='es'?'Ingresa tu nuevo nombre':'Enter your new name');
+  const newName = prompt(idioma==='es'?'Ingresa tu nuevo nombre':'Enter your new name');
   if(newName && auth.currentUser){
     auth.currentUser.updateProfile({displayName:newName}).then(()=>{
-      document.getElementById('profile-name').innerText=newName;
+      document.getElementById('profile-name').innerText = newName;
+      const user = JSON.parse(localStorage.getItem('user'));
+      user.displayName = newName;
+      localStorage.setItem('user', JSON.stringify(user));
     });
   }
 }
 
+// ---------- Cargar sesión ----------
+window.addEventListener('load', ()=>{
+  const savedUser = localStorage.getItem('user');
+  if(savedUser){
+    showProfile(JSON.parse(savedUser));
+  }
+});
+
 // ---------- Traducción botones ----------
-async function toggleLanguage(){
-  idioma = idioma==='es'?'en':'es';
-  updateTexts();
-}
 async function updateTexts(){
   const textsES = {
     search:"Buscar lugar", from:"Desde", to:"Hasta", route:"🚗 Obtener direcciones",
     speak:"🔊 Escuchar indicaciones", locate:"📍 Mi ubicación", dark:"🌙 Modo oscuro",
     sat:"🛰 Satélite", poi:"📌 Mostrar lugares", infoDefault:"Las indicaciones aparecerán aquí.",
-    login:"🔑 Iniciar sesión con Google", language:"🌐 Español / English",
-    changeName:"✏️ Cambiar nombre"
+    login:"🔑 Iniciar sesión con Google", language:"🌐 Español / English", changeName:"✏️ Cambiar nombre"
   };
   for(let key in textsES){
-    const el = document.getElementById(`btn-${key}`)||document.getElementById('btn-change-name');
+    let el = document.getElementById(`btn-${key}`) || document.getElementById('btn-change-name');
     if(el){
-      if(idioma==='es') el.innerText=textsES[key];
+      if(idioma==='es') el.innerText = textsES[key];
       else el.innerText = await translateText(textsES[key],'en');
     }
   }
-  document.getElementById('search').placeholder = idioma==='es'?textsES.search:await translateText(textsES.search,'en');
-  document.getElementById('from').placeholder = idioma==='es'?textsES.from:await translateText(textsES.from,'en');
-  document.getElementById('to').placeholder = idioma==='es'?textsES.to:await translateText(textsES.to,'en');
-  document.getElementById('info').innerText = idioma==='es'?textsES.infoDefault:await translateText(textsES.infoDefault,'en');
+  document.getElementById('search').placeholder = idioma==='es'? textsES.search : await translateText(textsES.search,'en');
+  document.getElementById('from').placeholder = idioma==='es'? textsES.from : await translateText(textsES.from,'en');
+  document.getElementById('to').placeholder = idioma==='es'? textsES.to : await translateText(textsES.to,'en');
+  document.getElementById('info').innerText = idioma==='es'? textsES.infoDefault : await translateText(textsES.infoDefault,'en');
 }
-
-// Inicializamos textos
+async function toggleLanguage(){
+  idioma = idioma==='es'?'en':'es';
+  localStorage.setItem('idioma', idioma);
+  updateTexts();
+  loadPOIs(); // recarga POIs con traducción
+}
 updateTexts();
 
 // ---------- Funciones mapa ----------
@@ -197,13 +175,11 @@ async function searchPlace(){
   marker=L.marker([lat,lon]).addTo(map);
   map.setView([lat,lon],15);
 }
-
 async function geocode(text){
   const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${text}`);
   const data=await res.json();
   return data[0];
 }
-
 async function route(){
   const from=document.getElementById("from").value;
   const to=document.getElementById("to").value;
@@ -219,80 +195,75 @@ async function route(){
   routeLine=L.polyline(coords,{weight:5,color:"#007bff"}).addTo(map);
   map.fitBounds(routeLine.getBounds());
 
-  const steps=routeData.legs[0].steps.map((s,i)=>{
+  const steps = routeData.legs[0].steps.map((s,i)=>{
     const tipo=s.maneuver.type||'';
     const mod=s.maneuver.modifier?` (${s.maneuver.modifier})`:'';
     const calle=s.name||'';
     return idioma==='es'? `${i+1}. ${tipo}${mod} en ${calle}` : `${i+1}. ${tipo}${mod} on ${calle}`;
   });
-  lastSteps=steps;
+  lastSteps = steps;
   document.getElementById("info").innerHTML=`<b>${idioma==='es'?'Indicaciones':'Directions'}:</b><br>`+steps.join("<br>");
 }
-
 function readDirections(){ if(lastSteps.length===0)return; if('speechSynthesis' in window){ speechSynthesis.cancel(); lastSteps.forEach(s=>speechSynthesis.speak(new SpeechSynthesisUtterance(s))); } }
 function locate(){ map.locate({setView:true,maxZoom:16}); map.on("locationfound",e=>{ L.marker(e.latlng).addTo(map).bindPopup(idioma==='es'?"Tú estás aquí":"You are here").openPopup(); }); }
 function toggleDark(){ map.eachLayer(l=>map.removeLayer(l)); currentLayer=currentLayer==="dark"?"normal":"dark"; (currentLayer==="dark"?darkLayer:normalLayer).addTo(map); }
 function toggleSatellite(){ map.eachLayer(l=>map.removeLayer(l)); satelliteLayer.addTo(map); currentLayer="satellite"; }
 
-// ---------- POIs con reseñas ----------
+// ---------- POIs ----------
 async function loadPOIs(){
   poiLayer.clearLayers();
-  const bbox=map.getBounds();
-  const query=`[out:json][timeout:25];
+  const bbox = map.getBounds();
+  const query = `[out:json][timeout:25];
     (
       node["amenity"="restaurant"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
       node["amenity"="cafe"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
       node["tourism"="museum"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
       node["shop"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
-    );
-    out body;`;
+    ); out body;`;
   const url='https://overpass-api.de/api/interpreter?data='+encodeURIComponent(query);
   const res=await fetch(url);
-  const data=await res.json();
+  const data = await res.json();
   data.elements.forEach(async e=>{
-    if(e.lat&&e.lon){
-      const id=e.id;
-      const name = e.tags.name || (idioma==='es'?"Sin nombre":"Unnamed");
-      const type = e.tags.amenity || e.tags.shop || e.tags.tourism || (idioma==='es'?"Lugar":"Place");
-      const m = L.marker([e.lat,e.lon]).addTo(poiLayer);
-      let translatedName = name;
-      let translatedType = type;
+    if(e.lat && e.lon){
+      const id = e.id;
+      let name = e.tags.name || (idioma==='es'?"Sin nombre":"Unnamed");
+      let type = e.tags.amenity || e.tags.shop || e.tags.tourism || (idioma==='es'?"Lugar":"Place");
       if(idioma!=='es'){
-        translatedName = await translateText(name,'en');
-        translatedType = await translateText(type,'en');
+        name = await translateText(name,'en');
+        type = await translateText(type,'en');
       }
-      const popupHTML=`<b>${translatedName}</b><br>${translatedType}<br><button onclick="addReview('${id}','${translatedName}')">${idioma==='es'?'Escribir reseña':'Write review'}</button><div id="reviews-${id}"></div>`;
+      const m = L.marker([e.lat,e.lon]).addTo(poiLayer);
+      const popupHTML=`<b>${name}</b><br>${type}<br><button onclick="addReview('${id}','${name}')">${idioma==='es'?'Escribir reseña':'Write review'}</button><div id="reviews-${id}"></div>`;
       m.bindPopup(popupHTML);
       loadReviews(id);
     }
   });
 }
 
-// Añadir reseña
+// Reseñas
 function addReview(poiId, poiName){
-  if(!auth.currentUser){ alert(idioma==='es'?'Inicia sesión primero':'Sign in first'); return; }
-  const text=prompt(idioma==='es'?`Escribe tu reseña para ${poiName}`:`Write your review for ${poiName}`);
+  const user = JSON.parse(localStorage.getItem('user'));
+  if(!user){ alert(idioma==='es'?'Inicia sesión primero':'Sign in first'); return; }
+  const text = prompt(idioma==='es'?`Escribe tu reseña para ${poiName}`:`Write your review for ${poiName}`);
   if(!text) return;
-  const review={user:auth.currentUser.displayName,text,time:Date.now()};
+  const review = {user: user.displayName, text, time:Date.now()};
   db.ref('reviews/'+poiId).push(review);
   loadReviews(poiId);
 }
-
-// Cargar reseñas
 function loadReviews(poiId){
   const div=document.getElementById(`reviews-${poiId}`);
   if(!div) return;
   div.innerHTML='';
   db.ref('reviews/'+poiId).once('value',snapshot=>{
     snapshot.forEach(child=>{
-      const r=child.val();
-      const date=new Date(r.time).toLocaleString();
+      const r = child.val();
+      const date = new Date(r.time).toLocaleString();
       div.innerHTML+=`<div style="border-top:1px solid #ccc;padding:2px;"><b>${r.user}</b>: ${r.text} <br><small>${date}</small></div>`;
     });
   });
 }
 
-// ---------- Asignar eventos a botones ----------
+// ---------- Eventos ----------
 document.getElementById('btn-search').addEventListener('click', searchPlace);
 document.getElementById('btn-route').addEventListener('click', route);
 document.getElementById('btn-speak').addEventListener('click', readDirections);
@@ -304,5 +275,6 @@ document.getElementById('btn-login').addEventListener('click', loginGoogle);
 document.getElementById('btn-language').addEventListener('click', toggleLanguage);
 document.getElementById('btn-change-name').addEventListener('click', changeName);
 </script>
+
 </body>
 </html>
