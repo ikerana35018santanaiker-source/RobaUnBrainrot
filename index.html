@@ -9,7 +9,7 @@
 
 <style>
 /* Reset y fuente */
-html, body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
 /* Mapa */
 #map { height:100%; }
@@ -62,6 +62,7 @@ html, body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Ver
   <input id="from" placeholder="Desde">
   <input id="to" placeholder="Hasta">
   <button onclick="route()">🚗 Direcciones</button>
+  <button onclick="readDirections()">🔊 Oír instrucciones</button>
   <button onclick="locate()">📍 Mi ubicación</button>
   <button onclick="toggleDark()">🌙 Modo oscuro</button>
   <button onclick="toggleSatellite()">🛰 Satélite</button>
@@ -85,6 +86,7 @@ let currentLayer="normal";
 let marker, routeLine;
 let streetVisible=false;
 let poiLayer = L.layerGroup().addTo(map);
+let lastSteps = []; // Guardar pasos para lectura
 
 // Búsqueda
 async function searchPlace(){
@@ -106,7 +108,7 @@ async function geocode(text){
   return data[0];
 }
 
-// Routing + turn-by-turn con lista en info
+// Routing + turn-by-turn
 async function route(){
   const from=document.getElementById("from").value;
   const to=document.getElementById("to").value;
@@ -121,15 +123,25 @@ async function route(){
   if(routeLine) map.removeLayer(routeLine);
   routeLine=L.polyline(coords,{weight:5,color:"#007bff"}).addTo(map);
   map.fitBounds(routeLine.getBounds());
-  
-  // Mostrar pasos en lista
-  const steps=routeData.legs[0].steps.map((s,i)=>`${i+1}. ${s.maneuver.instruction}`);
+
+  // Generar pasos legibles
+  const steps = routeData.legs[0].steps.map((s,i)=>{
+    const type = s.maneuver.type || '';
+    const modifier = s.maneuver.modifier ? ` (${s.maneuver.modifier})` : '';
+    const name = s.name || '';
+    return `${i+1}. ${type}${modifier} en ${name}`;
+  });
+
+  lastSteps = steps; // Guardamos pasos para leerlos
   document.getElementById("info").innerHTML = `<b>Direcciones:</b><br>` + steps.join("<br>");
-  
-  // Voz
+}
+
+// Función para leer instrucciones solo cuando se pulsa el botón
+function readDirections(){
+  if(lastSteps.length === 0) return;
   if('speechSynthesis' in window){
     speechSynthesis.cancel();
-    steps.forEach(step=>speechSynthesis.speak(new SpeechSynthesisUtterance(step)));
+    lastSteps.forEach(step => speechSynthesis.speak(new SpeechSynthesisUtterance(step)));
   }
 }
 
