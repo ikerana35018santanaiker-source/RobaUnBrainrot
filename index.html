@@ -10,6 +10,8 @@
 <style>
 html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 #map { height:100%; }
+
+/* Panel lateral izquierdo */
 .panel {
   position:absolute; top:10px; left:10px;
   background:white; padding:12px;
@@ -27,15 +29,29 @@ html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verd
   background:#007bff; color:white; border:none; cursor:pointer; font-weight:bold;
 }
 .panel button:hover { background:#0056b3; }
+
+/* Información de instrucciones */
 .info {
   font-size:13px; margin-top:6px;
   max-height:200px; overflow-y:auto; padding:6px;
   background:#f9f9f9; border-radius:6px; border:1px solid #ddd;
 }
+
+/* Street-view simulado */
 #streetView {
   position:absolute; top:0; right:0; width:50%; height:50%;
   display:none; z-index:900; border:2px solid #333;
   background-size:cover; background-position:center; border-radius:8px;
+}
+
+/* Panel superior derecho: ajustes y login */
+.top-right {
+  position:absolute; top:10px; right:10px;
+  z-index:1000;
+  display:flex; flex-direction:column; gap:6px;
+}
+.top-right button {
+  width:160px; font-size:13px; padding:6px 8px;
 }
 </style>
 </head>
@@ -44,21 +60,26 @@ html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verd
 <div id="map"></div>
 <div id="streetView"></div>
 
+<!-- Panel lateral izquierdo -->
 <div class="panel">
   <input id="search" placeholder="Buscar lugar">
-  <button onclick="searchPlace()">🔍 Buscar</button>
+  <button id="btn-search" onclick="searchPlace()">🔍 Buscar</button>
   <input id="from" placeholder="Desde">
   <input id="to" placeholder="Hasta">
-  <button onclick="route()">🚗 Obtener direcciones</button>
-  <button onclick="readDirections()">🔊 Escuchar indicaciones</button>
-  <button onclick="locate()">📍 Mi ubicación</button>
-  <button onclick="toggleDark()">🌙 Modo oscuro</button>
-  <button onclick="toggleSatellite()">🛰 Satélite</button>
-  <button onclick="toggleStreetView()">🏙 Vista calle</button>
-  <button onclick="loadPOIs()">📌 Mostrar lugares</button>
-  <button onclick="showSettings()">⚙ Ajustes</button>
-  <button onclick="loginGoogle()">🔑 Iniciar sesión con Google</button>
+  <button id="btn-route" onclick="route()">🚗 Obtener direcciones</button>
+  <button id="btn-speak" onclick="readDirections()">🔊 Escuchar indicaciones</button>
+  <button id="btn-locate" onclick="locate()">📍 Mi ubicación</button>
+  <button id="btn-dark" onclick="toggleDark()">🌙 Modo oscuro</button>
+  <button id="btn-sat" onclick="toggleSatellite()">🛰 Satélite</button>
+  <button id="btn-street" onclick="toggleStreetView()">🏙 Vista calle</button>
+  <button id="btn-poi" onclick="loadPOIs()">📌 Mostrar lugares</button>
   <div class="info" id="info">Las indicaciones aparecerán aquí.</div>
+</div>
+
+<!-- Panel superior derecho -->
+<div class="top-right">
+  <button id="btn-language" onclick="toggleLanguage()">🌐 Español / English</button>
+  <button id="btn-login" onclick="loginGoogle()">🔑 Iniciar sesión con Google</button>
 </div>
 
 <!-- Firebase -->
@@ -85,16 +106,67 @@ const auth = firebase.auth();
 function loginGoogle(){
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider)
-    .then(result => alert(`Bienvenido ${result.user.displayName}`))
+    .then(result => alert(`${idioma==='es'?'Bienvenido':'Welcome'} ${result.user.displayName}`))
     .catch(error => alert(`Error: ${error.message}`));
 }
 
-// Traducción (solo español / inglés simple)
+// Traducción de interfaz
 let idioma = 'es';
-function showSettings(){
-  idioma = idioma === 'es' ? 'en' : 'es';
-  alert(idioma==='es'?'Idioma cambiado a Español':'Language changed to English');
+function toggleLanguage(){
+  idioma = idioma==='es'?'en':'es';
+  updateTexts();
 }
+
+function updateTexts(){
+  const t = {
+    es: {
+      search: "Buscar lugar",
+      from: "Desde",
+      to: "Hasta",
+      route: "🚗 Obtener direcciones",
+      speak: "🔊 Escuchar indicaciones",
+      locate: "📍 Mi ubicación",
+      dark: "🌙 Modo oscuro",
+      sat: "🛰 Satélite",
+      street: "🏙 Vista calle",
+      poi: "📌 Mostrar lugares",
+      infoDefault: "Las indicaciones aparecerán aquí.",
+      login: "🔑 Iniciar sesión con Google",
+      language: "🌐 Español / English"
+    },
+    en: {
+      search: "Search place",
+      from: "From",
+      to: "To",
+      route: "🚗 Get directions",
+      speak: "🔊 Listen instructions",
+      locate: "📍 My location",
+      dark: "🌙 Dark mode",
+      sat: "🛰 Satellite",
+      street: "🏙 Street view",
+      poi: "📌 Show places",
+      infoDefault: "Directions will appear here.",
+      login: "🔑 Sign in with Google",
+      language: "🌐 Spanish / English"
+    }
+  };
+  document.getElementById("search").placeholder = t[idioma].search;
+  document.getElementById("from").placeholder = t[idioma].from;
+  document.getElementById("to").placeholder = t[idioma].to;
+  document.getElementById("btn-route").innerText = t[idioma].route;
+  document.getElementById("btn-speak").innerText = t[idioma].speak;
+  document.getElementById("btn-locate").innerText = t[idioma].locate;
+  document.getElementById("btn-dark").innerText = t[idioma].dark;
+  document.getElementById("btn-sat").innerText = t[idioma].sat;
+  document.getElementById("btn-street").innerText = t[idioma].street;
+  document.getElementById("btn-poi").innerText = t[idioma].poi;
+  document.getElementById("info").innerText = t[idioma].infoDefault;
+  document.getElementById("btn-login").innerText = t[idioma].login;
+  document.getElementById("btn-language").innerText = t[idioma].language;
+}
+
+// Inicializamos textos
+updateTexts();
 
 // Mapa Leaflet
 let map = L.map("map").setView([40.4168,-3.7038],13);
@@ -143,7 +215,7 @@ async function route(){
   routeLine=L.polyline(coords,{weight:5,color:"#007bff"}).addTo(map);
   map.fitBounds(routeLine.getBounds());
 
-  // Pasos en español
+  // Pasos legibles según idioma
   const steps = routeData.legs[0].steps.map((s,i)=>{
     const tipo = s.maneuver.type || '';
     const mod = s.maneuver.modifier ? ` (${s.maneuver.modifier})` : '';
@@ -218,5 +290,6 @@ async function loadPOIs(){
   });
 }
 </script>
+
 </body>
 </html>
