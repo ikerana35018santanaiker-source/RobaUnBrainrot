@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Mapa Avanzado Offline</title>
+<title>Mapa con POIs</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -40,29 +40,25 @@ html,body { margin:0; height:100%; font-family:Arial,sans-serif; }
   <button onclick="toggleDark()">🌙 Modo oscuro</button>
   <button onclick="toggleSatellite()">🛰 Satélite</button>
   <button onclick="toggleStreetView()">🏙 Street View</button>
+  <button onclick="loadPOIs()">📌 Mostrar POIs</button>
   <div class="info" id="info"></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.vectorgrid@1.3.0/dist/Leaflet.VectorGrid.bundled.js"></script>
 
 <script>
 let map = L.map("map").setView([40.4168,-3.7038],13);
 
 // Capas
-const normalLayer = L.tileLayer("tiles/{z}/{x}/{y}.png",{maxZoom:19, attribution:"OSM"});
-const darkLayer = L.tileLayer("tiles-dark/{z}/{x}/{y}.png",{maxZoom:19});
-const satelliteLayer = L.tileLayer("tiles-sat/{z}/{x}/{y}.png",{maxZoom:19});
+const normalLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19, attribution:"© OSM"});
+const darkLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19});
+const satelliteLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19});
 normalLayer.addTo(map);
 let currentLayer="normal";
 
 let marker, routeLine;
 let streetVisible=false;
-
-// Service Worker registro
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(e=>console.log("SW error", e));
-}
+let poiLayer = L.layerGroup().addTo(map);
 
 // Búsqueda
 async function searchPlace(){
@@ -144,13 +140,31 @@ map.on("click",e=>{
   else marker=L.marker(e.latlng).addTo(map);
 });
 
-// Edificios 3D (simulado con rectángulos extruidos)
-const buildings=L.layerGroup().addTo(map);
-function addBuilding(lat,lng,height){
-  L.rectangle([[lat,lng],[lat+0.001,lng+0.001]],{color:"#666",weight:1,fillOpacity:0.5}).addTo(buildings);
+// Cargar POIs
+async function loadPOIs(){
+  poiLayer.clearLayers();
+  const bbox = map.getBounds();
+  const query = `[out:json][timeout:25];
+    (
+      node["amenity"="restaurant"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
+      node["amenity"="cafe"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
+      node["tourism"="museum"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
+      node["shop"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
+    );
+    out body;`;
+  const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
+  const res = await fetch(url);
+  const data = await res.json();
+  data.elements.forEach(e=>{
+    if(e.lat && e.lon){
+      const name = e.tags.name || "Sin nombre";
+      const type = e.tags.amenity || e.tags.shop || e.tags.tourism || "Lugar";
+      L.marker([e.lat,e.lon]).addTo(poiLayer)
+        .bindPopup(`<b>${name}</b><br>${type}`);
+    }
+  });
 }
-addBuilding(40.417,-3.705,50);
-addBuilding(40.418,-3.704,30);
 </script>
+
 </body>
 </html>
