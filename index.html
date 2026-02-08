@@ -2,26 +2,52 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Mapa con POIs</title>
+<title>Mapa con POIs Mejorado</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
-html,body { margin:0; height:100%; font-family:Arial,sans-serif; }
+/* Reset y fuente */
+html, body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+/* Mapa */
 #map { height:100%; }
+
+/* Panel lateral */
 .panel {
   position:absolute; top:10px; left:10px;
-  background:white; padding:10px; border-radius:8px;
-  box-shadow:0 2px 8px rgba(0,0,0,.3); z-index:1000; width:280px;
+  background:white; padding:12px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.25);
+  z-index:1000; width:300px;
 }
-.panel input, .panel button { width:100%; margin-bottom:6px; padding:6px; }
-.panel button { cursor:pointer; }
-.info { font-size:13px; margin-top:4px; }
+
+/* Inputs y botones */
+.panel input, .panel button {
+  width:100%; margin-bottom:8px; padding:8px 10px;
+  border-radius:6px; border:1px solid #ccc; font-size:14px;
+  outline:none;
+  transition: 0.2s;
+}
+.panel input:focus { border-color:#007bff; }
+.panel button {
+  background:#007bff; color:white; border:none; cursor:pointer; font-weight:bold;
+}
+.panel button:hover { background:#0056b3; }
+
+/* Información de instrucciones */
+.info {
+  font-size:13px; margin-top:6px;
+  max-height:200px; overflow-y:auto; padding:6px;
+  background:#f9f9f9; border-radius:6px; border:1px solid #ddd;
+}
+
+/* Street-view simulado */
 #streetView {
   position:absolute; top:0; right:0; width:50%; height:50%;
   display:none; z-index:900; border:2px solid #333;
-  background-size:cover; background-position:center;
+  background-size:cover; background-position:center; border-radius:8px;
 }
 </style>
 </head>
@@ -41,7 +67,7 @@ html,body { margin:0; height:100%; font-family:Arial,sans-serif; }
   <button onclick="toggleSatellite()">🛰 Satélite</button>
   <button onclick="toggleStreetView()">🏙 Street View</button>
   <button onclick="loadPOIs()">📌 Mostrar POIs</button>
-  <div class="info" id="info"></div>
+  <div class="info" id="info">Las instrucciones aparecerán aquí.</div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -80,7 +106,7 @@ async function geocode(text){
   return data[0];
 }
 
-// Routing + turn-by-turn
+// Routing + turn-by-turn con lista en info
 async function route(){
   const from=document.getElementById("from").value;
   const to=document.getElementById("to").value;
@@ -93,11 +119,14 @@ async function route(){
   const routeData=data.routes[0];
   const coords=routeData.geometry.coordinates.map(c=>[c[1],c[0]]);
   if(routeLine) map.removeLayer(routeLine);
-  routeLine=L.polyline(coords,{weight:5}).addTo(map);
+  routeLine=L.polyline(coords,{weight:5,color:"#007bff"}).addTo(map);
   map.fitBounds(routeLine.getBounds());
   
-  const steps=routeData.legs[0].steps.map(s=>s.maneuver.instruction);
-  document.getElementById("info").innerHTML=steps.join("<br>");
+  // Mostrar pasos en lista
+  const steps=routeData.legs[0].steps.map((s,i)=>`${i+1}. ${s.maneuver.instruction}`);
+  document.getElementById("info").innerHTML = `<b>Direcciones:</b><br>` + steps.join("<br>");
+  
+  // Voz
   if('speechSynthesis' in window){
     speechSynthesis.cancel();
     steps.forEach(step=>speechSynthesis.speak(new SpeechSynthesisUtterance(step)));
