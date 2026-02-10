@@ -1180,6 +1180,7 @@ html, body {
 
 <div class="top-right">
   <button id="btn-lang">🌐 ES / EN</button>
+  <button id="btn-map-type">🛰️ Satélite</button>
   <div id="profile">
     <img id="pimg" alt="Profile">
     <span id="pname"></span>
@@ -1488,15 +1489,26 @@ function saveStats(uid) {
 }
 
 // MAP INITIALIZATION
+let currentMapType = 'street';
+let streetLayer;
+let satelliteLayer;
+
 function initMap() {
   map = L.map("map", {
     zoomControl: false
   }).setView([40.4168, -3.7038], 13);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  // Street map layer
+  streetLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: "© OpenStreetMap contributors"
   }).addTo(map);
+  
+  // Satellite map layer (using ESRI World Imagery)
+  satelliteLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+    maxZoom: 19,
+    attribution: "© Esri, Maxar, Earthstar Geographics"
+  });
 
   L.control.zoom({
     position: 'bottomleft'
@@ -2067,14 +2079,43 @@ document.getElementById('calculate-route-btn').onclick = async () => {
   }
 };
 
+// MAP TYPE TOGGLE
+document.getElementById('btn-map-type').onclick = () => {
+  if (currentMapType === 'street') {
+    // Switch to satellite
+    map.removeLayer(streetLayer);
+    map.addLayer(satelliteLayer);
+    currentMapType = 'satellite';
+    document.getElementById('btn-map-type').innerHTML = currentLang === 'es' ? '🗺️ Calles' : '🗺️ Streets';
+  } else {
+    // Switch to street
+    map.removeLayer(satelliteLayer);
+    map.addLayer(streetLayer);
+    currentMapType = 'street';
+    document.getElementById('btn-map-type').innerHTML = currentLang === 'es' ? '🛰️ Satélite' : '🛰️ Satellite';
+  }
+};
+
 // LANGUAGE TOGGLE
 document.getElementById('btn-lang').onclick = () => {
   currentLang = currentLang === 'es' ? 'en' : 'es';
   
   if (currentLang === 'en') {
     document.getElementById('search-input').placeholder = "Search restaurants, places...";
+    // Update map type button text
+    if (currentMapType === 'street') {
+      document.getElementById('btn-map-type').innerHTML = '🛰️ Satellite';
+    } else {
+      document.getElementById('btn-map-type').innerHTML = '🗺️ Streets';
+    }
   } else {
     document.getElementById('search-input').placeholder = "Buscar restaurantes, lugares...";
+    // Update map type button text
+    if (currentMapType === 'street') {
+      document.getElementById('btn-map-type').innerHTML = '🛰️ Satélite';
+    } else {
+      document.getElementById('btn-map-type').innerHTML = '🗺️ Calles';
+    }
   }
 };
 
