@@ -2,145 +2,574 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Ikemap</title>
+<title>Ikemap - Navegación Inteligente</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-html,body{
-  margin:0;
-  height:100%;
-  font-family:system-ui,-apple-system,Segoe UI
+* {
+  box-sizing: border-box;
 }
-#map{height:100%}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  overflow: hidden;
+}
+
+/* LOADING SCREEN */
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+#loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loader {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.loader::before,
+.loader::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+}
+
+.loader::before {
+  width: 80px;
+  height: 80px;
+}
+
+.loader::after {
+  width: 60px;
+  height: 60px;
+  top: 10px;
+  left: 10px;
+  animation-duration: 0.7s;
+  animation-direction: reverse;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+  margin-top: 30px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* MAP */
+#map {
+  height: 100%;
+  width: 100%;
+}
 
 /* BRAND */
-.brand{
-  position:absolute;
-  top:10px;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:1000;
-  text-align:center;
-  pointer-events:none
+.brand {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  text-align: center;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 12px 32px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.6s ease-out;
 }
-.brand h1{
-  margin:0;
-  font-size:28px;
-  font-weight:700
+
+@keyframes slideDown {
+  from {
+    transform: translateX(-50%) translateY(-100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
 }
-.brand small{
-  font-size:12px;
-  color:#555
+
+.brand h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand small {
+  font-size: 11px;
+  color: #666;
+  font-weight: 400;
 }
 
 /* PANEL */
-.panel{
-  position:absolute;
-  top:90px;
-  left:12px;
-  width:320px;
-  background:white;
-  padding:14px;
-  border-radius:16px;
-  box-shadow:0 15px 40px rgba(0,0,0,.25);
-  z-index:1000
+.panel {
+  position: absolute;
+  top: 100px;
+  left: 20px;
+  width: 360px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  padding: 20px;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: slideInLeft 0.6s ease-out;
+  transition: transform 0.3s ease;
 }
-.panel input,.panel button{
-  width:100%;
-  padding:9px;
-  margin-bottom:8px;
-  border-radius:8px;
-  border:1px solid #ccc
-}
-.panel button{
-  background:#007bff;
-  color:white;
-  border:none;
-  font-weight:600;
-  cursor:pointer
-}
-.panel button:hover{background:#005ec4}
 
-.info{
-  background:#f6f6f6;
-  padding:8px;
-  border-radius:8px;
-  max-height:180px;
-  overflow:auto;
-  font-size:13px
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.25);
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #999;
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background: #e8e8e8;
+  transform: translateY(-1px);
+}
+
+.info {
+  background: linear-gradient(135deg, #f6f9fc 0%, #f0f4f8 100%);
+  padding: 16px;
+  border-radius: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 13px;
+  margin-top: 12px;
+  border: 1px solid #e0e7ee;
+  line-height: 1.6;
+}
+
+.info::-webkit-scrollbar {
+  width: 6px;
+}
+
+.info::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.info::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
+}
+
+.info b {
+  color: #667eea;
+  display: block;
+  margin-bottom: 8px;
 }
 
 /* TOP RIGHT */
-.top-right{
-  position:absolute;
-  top:10px;
-  right:10px;
-  z-index:1000;
-  display:flex;
-  flex-direction:column;
-  gap:6px
-}
-.top-right button{
-  padding:7px 10px;
-  border-radius:8px;
-  border:none;
-  background:#111;
-  color:white;
-  cursor:pointer
+.top-right {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideInRight 0.6s ease-out;
 }
 
-#profile{
-  display:none;
-  background:#f2f2f2;
-  padding:8px;
-  border-radius:10px;
-  text-align:center
-}
-#profile img{
-  width:42px;
-  height:42px;
-  border-radius:50%
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
-.stars{color:#f5b301}
+.top-right button {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(17, 17, 17, 0.9);
+  backdrop-filter: blur(10px);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
 
-/* MOBILE */
-@media(max-width:600px){
-  .panel{width:90%;left:5%}
+.top-right button:hover {
+  background: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+#profile {
+  display: none;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 16px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+#profile img {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 3px solid #667eea;
+  margin-bottom: 8px;
+  transition: transform 0.3s ease;
+}
+
+#profile img:hover {
+  transform: scale(1.1);
+}
+
+#pname {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* STATS WIDGET */
+.stats-widget {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 16px 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  gap: 24px;
+  animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #667eea;
+  display: block;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* LOCATION BUTTON */
+.locate-btn {
+  position: absolute;
+  bottom: 100px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.locate-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 28px rgba(102, 126, 234, 0.5);
+}
+
+.locate-btn:active {
+  transform: scale(0.95);
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .panel {
+    width: calc(100% - 40px);
+    left: 20px;
+    top: 90px;
+  }
+  
+  .brand h1 {
+    font-size: 22px;
+  }
+  
+  .stats-widget {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  .stat-value {
+    font-size: 18px;
+  }
+  
+  .locate-btn {
+    bottom: 80px;
+    right: 10px;
+  }
+}
+
+/* TOOLTIP CUSTOM */
+.leaflet-tooltip {
+  background: rgba(17, 17, 17, 0.95) !important;
+  border: none !important;
+  color: white !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.leaflet-tooltip::before {
+  border-top-color: rgba(17, 17, 17, 0.95) !important;
+}
+
+/* PULSE ANIMATION FOR MARKERS */
+@keyframes markerPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.marker-pulse {
+  animation: markerPulse 2s infinite;
 }
 </style>
 </head>
 <body>
 
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+  <div class="loader"></div>
+  <div class="loading-text">Ikemap</div>
+</div>
+
 <div id="map"></div>
 
 <div class="brand">
-  <h1>Ikemap</h1>
-  <small>© 2026 Iker’s Studio</small>
+  <h1>🗺️ Ikemap</h1>
+  <small>© 2026 Iker's Studio</small>
 </div>
 
 <div class="panel">
-  <input id="from" placeholder="Desde">
-  <input id="to" placeholder="Hasta">
-  <button id="btn-route">Iniciar navegación</button>
+  <div class="input-group">
+    <span class="input-icon">📍</span>
+    <input id="from" placeholder="Desde (ej: Madrid)">
+  </div>
+  <div class="input-group">
+    <span class="input-icon">🎯</span>
+    <input id="to" placeholder="Hasta (ej: Barcelona)">
+  </div>
+  <button class="btn btn-primary" id="btn-route">🚀 Iniciar Navegación</button>
 
-  <button id="btn-poi">Mostrar lugares</button>
-  <button id="btn-history">Historial</button>
-  <button id="btn-reco">Recomendaciones</button>
+  <button class="btn btn-secondary" id="btn-poi">📌 Mostrar Lugares</button>
+  <button class="btn btn-secondary" id="btn-history">🕐 Historial</button>
+  <button class="btn btn-secondary" id="btn-reco">⭐ Recomendaciones</button>
 
-  <div class="info" id="info">Indicaciones aparecerán aquí</div>
+  <div class="info" id="info">
+    <b>Bienvenido a Ikemap</b>
+    Las indicaciones de navegación aparecerán aquí cuando inicies una ruta.
+  </div>
 </div>
 
 <div class="top-right">
-  <button id="btn-lang">ES / EN</button>
-  <button id="btn-login">Google</button>
+  <button id="btn-lang">🌐 ES / EN</button>
+  <button id="btn-login">🔐 Google Login</button>
   <div id="profile">
-    <img id="pimg"><br>
+    <img id="pimg" alt="Profile">
     <span id="pname"></span>
   </div>
 </div>
+
+<!-- STATS WIDGET -->
+<div class="stats-widget">
+  <div class="stat-item">
+    <span class="stat-value" id="stat-places">0</span>
+    <span class="stat-label">Lugares</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-value" id="stat-visits">0</span>
+    <span class="stat-label">Visitas</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-value" id="stat-routes">0</span>
+    <span class="stat-label">Rutas</span>
+  </div>
+</div>
+
+<!-- LOCATE BUTTON -->
+<button class="locate-btn" id="btn-locate" title="Mi ubicación">📍</button>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -148,131 +577,478 @@ html,body{
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-/* FIREBASE */
+// FIREBASE CONFIG
 firebase.initializeApp({
-  apiKey:"AIzaSyDiGY9FOUFwYYtyF9QGA53f4jh2rT1jab8",
-  authDomain:"ikendo-49e0c.firebaseapp.com",
-  databaseURL:"https://ikendo-49e0c-default-rtdb.firebaseio.com",
-  projectId:"ikendo-49e0c"
+  apiKey: "AIzaSyDiGY9FOUFwYYtyF9QGA53f4jh2rT1jab8",
+  authDomain: "ikendo-49e0c.firebaseapp.com",
+  databaseURL: "https://ikendo-49e0c-default-rtdb.firebaseio.com",
+  projectId: "ikendo-49e0c"
 });
-const auth=firebase.auth();
-const db=firebase.database();
 
-/* MAP */
-const map=L.map("map").setView([40.4168,-3.7038],13);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-  maxZoom:19,
-  attribution:"© OpenStreetMap"
-}).addTo(map);
+const auth = firebase.auth();
+const db = firebase.database();
 
-const poiLayer=L.layerGroup().addTo(map);
+// STATS
+let stats = {
+  places: 0,
+  visits: 0,
+  routes: 0
+};
+
+function updateStats() {
+  document.getElementById('stat-places').textContent = stats.places;
+  document.getElementById('stat-visits').textContent = stats.visits;
+  document.getElementById('stat-routes').textContent = stats.routes;
+}
+
+// MAP INITIALIZATION
+let map;
+let userMarker;
+
+function initMap() {
+  map = L.map("map", {
+    zoomControl: false
+  }).setView([40.4168, -3.7038], 13);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "© OpenStreetMap contributors"
+  }).addTo(map);
+
+  // Add zoom control to bottom right
+  L.control.zoom({
+    position: 'bottomright'
+  }).addTo(map);
+
+  // Hide loading screen
+  setTimeout(() => {
+    document.getElementById('loading-screen').classList.add('hidden');
+  }, 1500);
+}
+
+const poiLayer = L.layerGroup();
 let routeLine;
 
-/* LOGIN GOOGLE */
-btn-login.onclick=()=>{
-  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
-  .then(r=>{
-    const u={
-      uid:r.user.uid,
-      name:r.user.displayName,
-      photo:r.user.photoURL
-    };
-    localStorage.setItem("user",JSON.stringify(u));
-    showProfile(u);
-  });
+// LOGIN GOOGLE
+document.getElementById('btn-login').onclick = () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .then(result => {
+      const u = {
+        uid: result.user.uid,
+        name: result.user.displayName,
+        photo: result.user.photoURL
+      };
+      localStorage.setItem("user", JSON.stringify(u));
+      showProfile(u);
+      loadUserStats(u.uid);
+      showNotification("¡Bienvenido!", `Hola ${u.name}!`);
+    })
+    .catch(error => {
+      console.error("Error en login:", error);
+      showNotification("Error", "No se pudo iniciar sesión");
+    });
 };
 
-function showProfile(u){
-  profile.style.display="block";
-  pname.textContent=u.name;
-  pimg.src=u.photo;
+function showProfile(u) {
+  const profile = document.getElementById('profile');
+  const pname = document.getElementById('pname');
+  const pimg = document.getElementById('pimg');
+  
+  profile.style.display = "block";
+  pname.textContent = u.name;
+  pimg.src = u.photo;
+  
+  document.getElementById('btn-login').style.display = 'none';
 }
 
-const user=JSON.parse(localStorage.getItem("user"));
-if(user)showProfile(user);
-
-/* NAVIGATION (OSRM) */
-btn-route.onclick=async()=>{
-  if(routeLine)map.removeLayer(routeLine);
-
-  const res=await fetch(
-    "https://router.project-osrm.org/route/v1/driving/-3.7038,40.4168;-3.69,40.41?overview=full&steps=true"
-  );
-  const data=await res.json();
-
-  const coords=data.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
-  routeLine=L.polyline(coords,{color:"#007bff"}).addTo(map);
-  map.fitBounds(routeLine.getBounds());
-
-  info.innerHTML="<b>Navegación:</b><br>";
-  data.routes[0].legs[0].steps.forEach((s,i)=>{
-    info.innerHTML+=`${i+1}. ${s.maneuver.instruction}<br>`;
+// Load user stats from Firebase
+function loadUserStats(uid) {
+  db.ref(`stats/${uid}`).once('value', snapshot => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      stats = {
+        places: data.places || 0,
+        visits: data.visits || 0,
+        routes: data.routes || 0
+      };
+      updateStats();
+    }
   });
+}
+
+// Save stats to Firebase
+function saveStats(uid) {
+  db.ref(`stats/${uid}`).set(stats);
+}
+
+const user = JSON.parse(localStorage.getItem("user"));
+if (user) {
+  showProfile(user);
+  loadUserStats(user.uid);
+}
+
+// GEOCODING HELPER
+async function geocode(address) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.length > 0) {
+    return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+  }
+  return null;
+}
+
+// NAVIGATION (OSRM)
+document.getElementById('btn-route').onclick = async () => {
+  const fromAddr = document.getElementById('from').value;
+  const toAddr = document.getElementById('to').value;
+
+  if (!fromAddr || !toAddr) {
+    showNotification("Error", "Por favor ingresa origen y destino");
+    return;
+  }
+
+  document.getElementById('info').innerHTML = "<b>⏳ Calculando ruta...</b>";
+
+  try {
+    const fromCoords = await geocode(fromAddr);
+    const toCoords = await geocode(toAddr);
+
+    if (!fromCoords || !toCoords) {
+      showNotification("Error", "No se pudo encontrar una de las direcciones");
+      return;
+    }
+
+    if (routeLine) map.removeLayer(routeLine);
+
+    const url = `https://router.project-osrm.org/route/v1/driving/${fromCoords.lon},${fromCoords.lat};${toCoords.lon},${toCoords.lat}?overview=full&steps=true`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.routes || data.routes.length === 0) {
+      showNotification("Error", "No se pudo calcular la ruta");
+      return;
+    }
+
+    const coords = polyline.decode(data.routes[0].geometry).map(c => [c[0], c[1]]);
+    
+    routeLine = L.polyline(coords, {
+      color: "#667eea",
+      weight: 5,
+      opacity: 0.8,
+      lineJoin: 'round'
+    }).addTo(map);
+    
+    map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+
+    // Add start and end markers
+    L.marker([fromCoords.lat, fromCoords.lon]).addTo(map)
+      .bindTooltip("Origen", { permanent: true, direction: 'top' });
+    L.marker([toCoords.lat, toCoords.lon]).addTo(map)
+      .bindTooltip("Destino", { permanent: true, direction: 'top' });
+
+    const duration = Math.round(data.routes[0].duration / 60);
+    const distance = (data.routes[0].distance / 1000).toFixed(1);
+
+    document.getElementById('info').innerHTML = `<b>🎉 Ruta calculada</b><br>⏱️ Tiempo: ${duration} min<br>📏 Distancia: ${distance} km<br><br>`;
+    
+    data.routes[0].legs[0].steps.forEach((s, i) => {
+      document.getElementById('info').innerHTML += `${i + 1}. ${s.maneuver.instruction}<br>`;
+    });
+
+    stats.routes++;
+    updateStats();
+    if (user) saveStats(user.uid);
+    
+    showNotification("Ruta lista", `${distance} km en ${duration} minutos`);
+
+  } catch (error) {
+    console.error("Error en navegación:", error);
+    showNotification("Error", "Hubo un problema al calcular la ruta");
+  }
 };
 
-/* POIS */
-async function loadPOIs(){
+// Simple polyline decoder
+const polyline = {
+  decode: function(str, precision) {
+    let index = 0,
+        lat = 0,
+        lng = 0,
+        coordinates = [],
+        shift = 0,
+        result = 0,
+        byte = null,
+        latitude_change,
+        longitude_change,
+        factor = Math.pow(10, precision || 5);
+
+    while (index < str.length) {
+      byte = null;
+      shift = 0;
+      result = 0;
+
+      do {
+        byte = str.charCodeAt(index++) - 63;
+        result |= (byte & 0x1f) << shift;
+        shift += 5;
+      } while (byte >= 0x20);
+
+      latitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+      shift = result = 0;
+
+      do {
+        byte = str.charCodeAt(index++) - 63;
+        result |= (byte & 0x1f) << shift;
+        shift += 5;
+      } while (byte >= 0x20);
+
+      longitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+      lat += latitude_change;
+      lng += longitude_change;
+
+      coordinates.push([lat / factor, lng / factor]);
+    }
+
+    return coordinates;
+  }
+};
+
+// POIS
+async function loadPOIs() {
   poiLayer.clearLayers();
-  const b=map.getBounds();
-  const q=`[out:json];
-  (node["amenity"~"restaurant|cafe|bar"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
-   node["shop"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}));out;`;
+  document.getElementById('info').innerHTML = "<b>⏳ Cargando lugares...</b>";
+  
+  const b = map.getBounds();
+  const query = `[out:json][timeout:25];
+    (
+      node["amenity"~"restaurant|cafe|bar|fast_food"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
+      node["tourism"~"museum|attraction"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
+      node["shop"~"supermarket|mall"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
+    );
+    out body;`;
 
-  const res=await fetch(
-    "https://overpass-api.de/api/interpreter?data="+encodeURIComponent(q)
-  );
-  const data=await res.json();
+  try {
+    const res = await fetch(
+      "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query)
+    );
+    const data = await res.json();
 
-  data.elements.forEach(e=>{
-    if(!e.lat)return;
-    const name=e.tags.name||"Lugar";
+    if (!data.elements || data.elements.length === 0) {
+      document.getElementById('info').innerHTML = "<b>No se encontraron lugares en esta área</b>";
+      return;
+    }
 
-    const m=L.circleMarker([e.lat,e.lon],{
-      radius:7,
-      color:"#007bff",
-      fillOpacity:.9
-    }).addTo(poiLayer);
+    poiLayer.addTo(map);
+    let count = 0;
 
-    m.bindTooltip(name);
+    data.elements.forEach(e => {
+      if (!e.lat || !e.lon) return;
+      
+      const name = e.tags.name || "Lugar sin nombre";
+      const type = e.tags.amenity || e.tags.tourism || e.tags.shop || "lugar";
+      
+      const icon = getIconForType(type);
+      
+      const marker = L.circleMarker([e.lat, e.lon], {
+        radius: 8,
+        color: "#667eea",
+        fillColor: "#764ba2",
+        fillOpacity: 0.8,
+        weight: 2
+      }).addTo(poiLayer);
 
-    m.on("click",()=>{
-      if(user){
-        db.ref(`history/${user.uid}`).push({
-          name,
-          lat:e.lat,
-          lon:e.lon,
-          time:Date.now()
+      marker.bindTooltip(`${icon} ${name}`);
+
+      marker.on("click", () => {
+        if (user) {
+          db.ref(`history/${user.uid}`).push({
+            name,
+            type,
+            lat: e.lat,
+            lon: e.lon,
+            time: Date.now()
+          });
+          
+          stats.visits++;
+          updateStats();
+          saveStats(user.uid);
+        }
+        
+        showNotification("Lugar visitado", `Has marcado: ${name}`);
+        
+        marker.setStyle({
+          color: "#f5b301",
+          fillColor: "#f5b301"
         });
-      }
-      if("Notification"in window && Notification.permission==="granted"){
-        new Notification("Ikemap",{body:`Visitaste ${name}`});
-      }
+      });
+      
+      count++;
     });
-  });
+
+    stats.places = count;
+    updateStats();
+    if (user) saveStats(user.uid);
+    
+    document.getElementById('info').innerHTML = `<b>✅ ${count} lugares encontrados</b><br>Haz clic en los marcadores para marcarlos como visitados.`;
+    
+  } catch (error) {
+    console.error("Error loading POIs:", error);
+    document.getElementById('info').innerHTML = "<b>❌ Error al cargar lugares</b>";
+  }
 }
 
-btn-poi.onclick=loadPOIs;
+function getIconForType(type) {
+  const icons = {
+    restaurant: "🍽️",
+    cafe: "☕",
+    bar: "🍺",
+    fast_food: "🍔",
+    museum: "🏛️",
+    attraction: "🎭",
+    supermarket: "🛒",
+    mall: "🏬",
+    default: "📍"
+  };
+  return icons[type] || icons.default;
+}
 
-/* HISTORIAL */
-btn-history.onclick=()=>{
-  if(!user)return;
-  info.innerHTML="<b>Historial:</b><br>";
-  db.ref(`history/${user.uid}`).once("value",s=>{
-    s.forEach(e=>{
-      info.innerHTML+=`• ${e.val().name}<br>`;
+document.getElementById('btn-poi').onclick = loadPOIs;
+
+// HISTORY
+document.getElementById('btn-history').onclick = () => {
+  if (!user) {
+    showNotification("Login requerido", "Inicia sesión para ver tu historial");
+    return;
+  }
+  
+  document.getElementById('info').innerHTML = "<b>📜 Historial de visitas:</b><br>";
+  
+  db.ref(`history/${user.uid}`).limitToLast(10).once("value", snapshot => {
+    if (!snapshot.exists()) {
+      document.getElementById('info').innerHTML += "<i>No hay visitas registradas aún</i>";
+      return;
+    }
+    
+    const visits = [];
+    snapshot.forEach(childSnapshot => {
+      visits.push(childSnapshot.val());
+    });
+    
+    visits.reverse().forEach((v, i) => {
+      const date = new Date(v.time).toLocaleDateString('es-ES');
+      document.getElementById('info').innerHTML += `${i + 1}. ${getIconForType(v.type)} ${v.name} <small>(${date})</small><br>`;
     });
   });
 };
 
-/* RECOMENDACIONES */
-btn-reco.onclick=()=>{
-  info.innerHTML="<b>Recomendado para ti:</b><br>Restaurantes cercanos según tu historial";
+// RECOMMENDATIONS
+document.getElementById('btn-reco').onclick = () => {
+  if (!user) {
+    showNotification("Login requerido", "Inicia sesión para ver recomendaciones");
+    return;
+  }
+  
+  document.getElementById('info').innerHTML = "<b>⭐ Recomendaciones personalizadas:</b><br>";
+  
+  db.ref(`history/${user.uid}`).once("value", snapshot => {
+    if (!snapshot.exists()) {
+      document.getElementById('info').innerHTML += "<i>Visita algunos lugares para recibir recomendaciones</i>";
+      return;
+    }
+    
+    const types = {};
+    snapshot.forEach(childSnapshot => {
+      const type = childSnapshot.val().type || 'lugar';
+      types[type] = (types[type] || 0) + 1;
+    });
+    
+    const topType = Object.keys(types).reduce((a, b) => types[a] > types[b] ? a : b);
+    
+    document.getElementById('info').innerHTML += `Basado en tu historial, te gustan los ${getIconForType(topType)} <b>${topType}s</b>.<br><br>`;
+    document.getElementById('info').innerHTML += "💡 Te recomendamos explorar más lugares de este tipo en tu zona.";
+  });
 };
 
-/* NOTIFICATIONS */
-if("Notification"in window){
+// LOCATE USER
+document.getElementById('btn-locate').onclick = () => {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        map.setView([lat, lon], 15);
+        
+        if (userMarker) {
+          map.removeLayer(userMarker);
+        }
+        
+        userMarker = L.circleMarker([lat, lon], {
+          radius: 10,
+          color: "#667eea",
+          fillColor: "#667eea",
+          fillOpacity: 0.8,
+          weight: 3,
+          className: 'marker-pulse'
+        }).addTo(map);
+        
+        userMarker.bindTooltip("📍 Tu ubicación", { permanent: false });
+        
+        showNotification("Ubicación encontrada", "Te hemos localizado en el mapa");
+      },
+      error => {
+        showNotification("Error", "No se pudo obtener tu ubicación");
+      }
+    );
+  } else {
+    showNotification("Error", "Tu navegador no soporta geolocalización");
+  }
+};
+
+// LANGUAGE TOGGLE
+let currentLang = 'es';
+document.getElementById('btn-lang').onclick = () => {
+  currentLang = currentLang === 'es' ? 'en' : 'es';
+  
+  if (currentLang === 'en') {
+    document.getElementById('from').placeholder = "From (e.g. Madrid)";
+    document.getElementById('to').placeholder = "To (e.g. Barcelona)";
+    document.getElementById('btn-route').innerHTML = "🚀 Start Navigation";
+    document.getElementById('btn-poi').innerHTML = "📌 Show Places";
+    document.getElementById('btn-history').innerHTML = "🕐 History";
+    document.getElementById('btn-reco').innerHTML = "⭐ Recommendations";
+    showNotification("Language changed", "Interface now in English");
+  } else {
+    document.getElementById('from').placeholder = "Desde (ej: Madrid)";
+    document.getElementById('to').placeholder = "Hasta (ej: Barcelona)";
+    document.getElementById('btn-route').innerHTML = "🚀 Iniciar Navegación";
+    document.getElementById('btn-poi').innerHTML = "📌 Mostrar Lugares";
+    document.getElementById('btn-history').innerHTML = "🕐 Historial";
+    document.getElementById('btn-reco').innerHTML = "⭐ Recomendaciones";
+    showNotification("Idioma cambiado", "Interfaz ahora en Español");
+  }
+};
+
+// NOTIFICATIONS
+function showNotification(title, body) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, { 
+      body,
+      icon: "https://cdn-icons-png.flaticon.com/512/854/854878.png"
+    });
+  }
+}
+
+// Request notification permission
+if ("Notification" in window && Notification.permission === "default") {
   Notification.requestPermission();
 }
+
+// INITIALIZE
+window.onload = initMap;
 </script>
 </body>
 </html>
