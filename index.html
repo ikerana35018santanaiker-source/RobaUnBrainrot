@@ -89,6 +89,181 @@ html, body {
   50% { opacity: 0.6; }
 }
 
+/* LOGIN MODAL */
+#login-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+#login-modal.active {
+  display: flex;
+}
+
+.login-box {
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideInUp 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.login-box h2 {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.login-box p {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+.login-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.login-tab {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 600;
+  color: #999;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.login-tab.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+.login-content {
+  display: none;
+}
+
+.login-content.active {
+  display: block;
+}
+
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+.btn-google {
+  background: white;
+  color: #333;
+  border: 2px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-google:hover {
+  background: #f5f5f5;
+  border-color: #667eea;
+}
+
+.divider {
+  text-align: center;
+  margin: 20px 0;
+  color: #999;
+  position: relative;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
 /* MAP */
 #map {
   height: 100%;
@@ -109,18 +284,6 @@ html, body {
   padding: 12px 32px;
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  animation: slideDown 0.6s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    transform: translateX(-50%) translateY(-100px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
 }
 
 .brand h1 {
@@ -139,152 +302,380 @@ html, body {
   font-weight: 400;
 }
 
-/* PANEL */
-.panel {
+/* SEARCH PANEL */
+.search-panel {
   position: absolute;
-  top: 100px;
+  top: 20px;
   left: 20px;
-  width: 360px;
+  width: 380px;
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
   padding: 20px;
   border-radius: 24px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   z-index: 1000;
-  animation: slideInLeft 0.6s ease-out;
-  transition: transform 0.3s ease;
 }
 
-@keyframes slideInLeft {
-  from {
-    transform: translateX(-400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.search-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
-.panel:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.25);
-}
-
-.input-group {
-  position: relative;
-  margin-bottom: 12px;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 14px 16px 14px 44px;
+.search-box input {
+  flex: 1;
+  padding: 14px 16px;
   border-radius: 12px;
   border: 2px solid #e0e0e0;
   font-size: 14px;
   font-family: 'Poppins', sans-serif;
   transition: all 0.3s ease;
-  background: white;
 }
 
-.input-group input:focus {
+.search-box input:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
 }
 
-.input-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
-  color: #999;
-}
-
-.btn {
-  width: 100%;
-  padding: 14px;
-  margin-bottom: 10px;
+.search-btn {
+  width: 50px;
+  height: 50px;
   border-radius: 12px;
   border: none;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 14px;
-  font-family: 'Poppins', sans-serif;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-.btn:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
-.btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.btn-primary:hover {
+.search-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
 }
 
-.btn-secondary {
-  background: #f5f5f5;
+.quick-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.quick-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quick-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+/* RESULTS MODAL */
+#results-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9998;
+  animation: fadeIn 0.3s ease;
+}
+
+#results-modal.active {
+  display: flex;
+}
+
+.results-box {
+  background: white;
+  padding: 30px;
+  border-radius: 24px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideInUp 0.4s ease;
+}
+
+.results-box h3 {
+  margin: 0 0 20px 0;
+  font-size: 24px;
   color: #333;
 }
 
-.btn-secondary:hover {
-  background: #e8e8e8;
-  transform: translateY(-1px);
+.result-item {
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.info {
-  background: linear-gradient(135deg, #f6f9fc 0%, #f0f4f8 100%);
-  padding: 16px;
-  border-radius: 16px;
-  max-height: 200px;
-  overflow-y: auto;
+.result-item:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.result-item h4 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.result-item p {
+  margin: 0;
   font-size: 13px;
-  margin-top: 12px;
-  border: 1px solid #e0e7ee;
+  color: #666;
+}
+
+.close-modal {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+  background: #e0e0e0;
+  transform: rotate(90deg);
+}
+
+/* PLACE DETAIL MODAL */
+#place-detail-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9997;
+  animation: fadeIn 0.3s ease;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+#place-detail-modal.active {
+  display: flex;
+}
+
+.place-detail-box {
+  background: white;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideInUp 0.4s ease;
+}
+
+.place-header {
+  padding: 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 24px 24px 0 0;
+  position: relative;
+}
+
+.place-header h2 {
+  margin: 0 0 15px 0;
+  font-size: 32px;
+}
+
+.speak-btn {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.speak-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.place-address {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.place-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  padding: 20px 30px;
+  background: #f8f9fa;
+}
+
+.place-images img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.place-images img:hover {
+  transform: scale(1.05);
+}
+
+.reviews-section {
+  padding: 30px;
+}
+
+.reviews-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.rating-number {
+  font-size: 48px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.rating-stars {
+  font-size: 24px;
+  color: #f5b301;
+}
+
+.review-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.filter-btn:hover {
+  border-color: #667eea;
+}
+
+.review-item {
+  padding: 20px;
+  border-radius: 12px;
+  background: #f8f9fa;
+  margin-bottom: 15px;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.review-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-user img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #667eea;
+}
+
+.review-user-info h4 {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.review-user-info p {
+  margin: 0;
+  font-size: 12px;
+  color: #999;
+}
+
+.review-stars {
+  color: #f5b301;
+  font-size: 16px;
+}
+
+.review-text {
+  font-size: 14px;
+  color: #666;
   line-height: 1.6;
 }
 
-.info::-webkit-scrollbar {
-  width: 6px;
+.add-review-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  margin-top: 20px;
 }
 
-.info::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.info::-webkit-scrollbar-thumb {
-  background: #667eea;
-  border-radius: 10px;
-}
-
-.info b {
-  color: #667eea;
-  display: block;
-  margin-bottom: 8px;
+.add-review-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
 }
 
 /* TOP RIGHT */
@@ -296,18 +687,6 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  animation: slideInRight 0.6s ease-out;
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
 }
 
 .top-right button {
@@ -338,12 +717,12 @@ html, body {
   border-radius: 16px;
   text-align: center;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  animation: fadeIn 0.5s ease;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
+#profile:hover {
+  transform: translateY(-2px);
 }
 
 #profile img {
@@ -352,44 +731,34 @@ html, body {
   border-radius: 50%;
   border: 3px solid #667eea;
   margin-bottom: 8px;
-  transition: transform 0.3s ease;
-}
-
-#profile img:hover {
-  transform: scale(1.1);
 }
 
 #pname {
   font-size: 13px;
   font-weight: 600;
   color: #333;
+  display: block;
+}
+
+#pusername {
+  font-size: 11px;
+  color: #999;
+  display: block;
 }
 
 /* STATS WIDGET */
 .stats-widget {
   position: absolute;
   bottom: 20px;
-  left: 20px;
+  right: 20px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  padding: 16px 20px;
+  padding: 12px 16px;
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   display: flex;
-  gap: 24px;
-  animation: slideInUp 0.6s ease-out;
-}
-
-@keyframes slideInUp {
-  from {
-    transform: translateY(100px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  gap: 16px;
 }
 
 .stat-item {
@@ -397,52 +766,22 @@ html, body {
 }
 
 .stat-value {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   color: #667eea;
   display: block;
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 10px;
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-/* LOCATION BUTTON */
-.locate-btn {
-  position: absolute;
-  bottom: 100px;
-  right: 20px;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-  z-index: 1000;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.locate-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 28px rgba(102, 126, 234, 0.5);
-}
-
-.locate-btn:active {
-  transform: scale(0.95);
-}
-
 /* MOBILE RESPONSIVE */
 @media (max-width: 768px) {
-  .panel {
+  .search-panel {
     width: calc(100% - 40px);
     left: 20px;
     top: 90px;
@@ -454,56 +793,44 @@ html, body {
   
   .stats-widget {
     bottom: 10px;
-    left: 10px;
     right: 10px;
     gap: 12px;
-    padding: 12px;
+    padding: 10px 12px;
   }
   
   .stat-value {
-    font-size: 18px;
+    font-size: 16px;
   }
   
-  .locate-btn {
-    bottom: 80px;
-    right: 10px;
+  .stat-label {
+    font-size: 9px;
+  }
+  
+  .place-header h2 {
+    font-size: 24px;
+  }
+  
+  .results-box,
+  .place-detail-box {
+    width: 95%;
   }
 }
 
-/* TOOLTIP CUSTOM */
-.leaflet-tooltip {
-  background: rgba(17, 17, 17, 0.95) !important;
-  border: none !important;
-  color: white !important;
-  border-radius: 8px !important;
-  padding: 6px 12px !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+.results-box::-webkit-scrollbar,
+.place-detail-box::-webkit-scrollbar {
+  width: 8px;
 }
 
-.leaflet-tooltip::before {
-  border-top-color: rgba(17, 17, 17, 0.95) !important;
+.results-box::-webkit-scrollbar-track,
+.place-detail-box::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
 }
 
-/* PULSE ANIMATION FOR MARKERS */
-@keyframes markerPulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 0.7;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.marker-pulse {
-  animation: markerPulse 2s infinite;
+.results-box::-webkit-scrollbar-thumb,
+.place-detail-box::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
 }
 </style>
 </head>
@@ -515,6 +842,108 @@ html, body {
   <div class="loading-text">Ikemap</div>
 </div>
 
+<!-- LOGIN MODAL -->
+<div id="login-modal">
+  <div class="login-box">
+    <h2>🗺️ Bienvenido a Ikemap</h2>
+    <p>Inicia sesión para continuar</p>
+    
+    <div class="login-tabs">
+      <div class="login-tab active" data-tab="login">Iniciar Sesión</div>
+      <div class="login-tab" data-tab="register">Registrarse</div>
+    </div>
+    
+    <div id="login-content" class="login-content active">
+      <button class="btn btn-google" id="google-login">
+        <span>🔐</span> Continuar con Google
+      </button>
+      
+      <div class="divider">O</div>
+      
+      <div class="input-group">
+        <input type="email" id="login-email" placeholder="Correo electrónico">
+      </div>
+      <div class="input-group">
+        <input type="password" id="login-password" placeholder="Contraseña">
+      </div>
+      <button class="btn btn-primary" id="login-btn">Iniciar Sesión</button>
+    </div>
+    
+    <div id="register-content" class="login-content">
+      <button class="btn btn-google" id="google-register">
+        <span>🔐</span> Registrarse con Google
+      </button>
+      
+      <div class="divider">O</div>
+      
+      <div class="input-group">
+        <input type="text" id="register-username" placeholder="Nombre de usuario">
+      </div>
+      <div class="input-group">
+        <input type="email" id="register-email" placeholder="Correo electrónico">
+      </div>
+      <div class="input-group">
+        <input type="password" id="register-password" placeholder="Contraseña">
+      </div>
+      <button class="btn btn-primary" id="register-btn">Crear Cuenta</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS MODAL -->
+<div id="results-modal">
+  <div class="results-box">
+    <button class="close-modal" onclick="closeResultsModal()">✕</button>
+    <h3>Resultados de búsqueda</h3>
+    <div id="results-list"></div>
+  </div>
+</div>
+
+<!-- PLACE DETAIL MODAL -->
+<div id="place-detail-modal">
+  <div class="place-detail-box">
+    <button class="close-modal" onclick="closePlaceDetail()" style="position: fixed; top: 30px; right: 30px; z-index: 10;">✕</button>
+    
+    <div class="place-header">
+      <button class="speak-btn" id="speak-btn">🔊</button>
+      <h2 id="place-name">Nombre del Lugar</h2>
+      <p class="place-address" id="place-address">Dirección</p>
+    </div>
+    
+    <div class="place-images" id="place-images">
+      <!-- Images will be loaded here -->
+    </div>
+    
+    <div class="reviews-section">
+      <div class="reviews-header">
+        <div class="rating-summary">
+          <span class="rating-number" id="avg-rating">4.5</span>
+          <div>
+            <div class="rating-stars" id="rating-stars">★★★★★</div>
+            <p style="margin: 0; font-size: 12px; color: #999;"><span id="review-count">0</span> reseñas</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="review-filters">
+        <button class="filter-btn active" data-filter="all">Todas</button>
+        <button class="filter-btn" data-filter="recent">Más recientes</button>
+        <button class="filter-btn" data-filter="5">⭐ 5</button>
+        <button class="filter-btn" data-filter="4">⭐ 4</button>
+        <button class="filter-btn" data-filter="3">⭐ 3</button>
+        <button class="filter-btn" data-filter="2">⭐ 2</button>
+        <button class="filter-btn" data-filter="1">⭐ 1</button>
+      </div>
+      
+      <div id="reviews-list">
+        <!-- Reviews will be loaded here -->
+      </div>
+      
+      <button class="add-review-btn" id="add-review-btn">✍️ Añadir Reseña</button>
+    </div>
+  </div>
+</div>
+
 <div id="map"></div>
 
 <div class="brand">
@@ -522,33 +951,25 @@ html, body {
   <small>© 2026 Iker's Studio</small>
 </div>
 
-<div class="panel">
-  <div class="input-group">
-    <span class="input-icon">📍</span>
-    <input id="from" placeholder="Desde (ej: Madrid)">
+<div class="search-panel">
+  <div class="search-box">
+    <input id="search-input" placeholder="Buscar restaurantes, lugares...">
+    <button class="search-btn" id="search-btn">🔍</button>
   </div>
-  <div class="input-group">
-    <span class="input-icon">🎯</span>
-    <input id="to" placeholder="Hasta (ej: Barcelona)">
-  </div>
-  <button class="btn btn-primary" id="btn-route">🚀 Iniciar Navegación</button>
-
-  <button class="btn btn-secondary" id="btn-poi">📌 Mostrar Lugares</button>
-  <button class="btn btn-secondary" id="btn-history">🕐 Historial</button>
-  <button class="btn btn-secondary" id="btn-reco">⭐ Recomendaciones</button>
-
-  <div class="info" id="info">
-    <b>Bienvenido a Ikemap</b>
-    Las indicaciones de navegación aparecerán aquí cuando inicies una ruta.
+  <div class="quick-actions">
+    <button class="quick-btn" onclick="quickSearch('restaurante')">🍽️ Restaurantes</button>
+    <button class="quick-btn" onclick="quickSearch('cafe')">☕ Cafés</button>
+    <button class="quick-btn" onclick="quickSearch('museo')">🏛️ Museos</button>
+    <button class="quick-btn" onclick="quickSearch('parque')">🌳 Parques</button>
   </div>
 </div>
 
 <div class="top-right">
   <button id="btn-lang">🌐 ES / EN</button>
-  <button id="btn-login">🔐 Google Login</button>
   <div id="profile">
     <img id="pimg" alt="Profile">
     <span id="pname"></span>
+    <span id="pusername"></span>
   </div>
 </div>
 
@@ -568,9 +989,6 @@ html, body {
   </div>
 </div>
 
-<!-- LOCATE BUTTON -->
-<button class="locate-btn" id="btn-locate" title="Mi ubicación">📍</button>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -588,6 +1006,11 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db = firebase.database();
 
+let currentUser = null;
+let currentLang = 'es';
+let map;
+let currentPlaceId = null;
+
 // STATS
 let stats = {
   places: 0,
@@ -601,68 +1024,171 @@ function updateStats() {
   document.getElementById('stat-routes').textContent = stats.routes;
 }
 
-// MAP INITIALIZATION
-let map;
-let userMarker;
+// LOGIN/REGISTER TABS
+document.querySelectorAll('.login-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.login-content').forEach(c => c.classList.remove('active'));
+    
+    tab.classList.add('active');
+    if (tab.dataset.tab === 'login') {
+      document.getElementById('login-content').classList.add('active');
+    } else {
+      document.getElementById('register-content').classList.add('active');
+    }
+  });
+});
 
-function initMap() {
-  map = L.map("map", {
-    zoomControl: false
-  }).setView([40.4168, -3.7038], 13);
-
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "© OpenStreetMap contributors"
-  }).addTo(map);
-
-  // Add zoom control to bottom right
-  L.control.zoom({
-    position: 'bottomright'
-  }).addTo(map);
-
-  // Hide loading screen
-  setTimeout(() => {
-    document.getElementById('loading-screen').classList.add('hidden');
-  }, 1500);
-}
-
-const poiLayer = L.layerGroup();
-let routeLine;
-
-// LOGIN GOOGLE
-document.getElementById('btn-login').onclick = () => {
+// GOOGLE LOGIN
+document.getElementById('google-login').onclick = () => {
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider)
+  auth.signInWithPopup(provider).then(result => {
+    handleUserLogin(result.user);
+  }).catch(error => {
+    alert('Error: ' + error.message);
+  });
+};
+
+document.getElementById('google-register').onclick = () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).then(result => {
+    handleUserLogin(result.user, true);
+  }).catch(error => {
+    alert('Error: ' + error.message);
+  });
+};
+
+// EMAIL LOGIN
+document.getElementById('login-btn').onclick = () => {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  
+  if (!email || !password) {
+    alert('Por favor completa todos los campos');
+    return;
+  }
+  
+  auth.signInWithEmailAndPassword(email, password)
     .then(result => {
-      const u = {
-        uid: result.user.uid,
-        name: result.user.displayName,
-        photo: result.user.photoURL
-      };
-      localStorage.setItem("user", JSON.stringify(u));
-      showProfile(u);
-      loadUserStats(u.uid);
-      showNotification("¡Bienvenido!", `Hola ${u.name}!`);
+      handleUserLogin(result.user);
     })
     .catch(error => {
-      console.error("Error en login:", error);
-      showNotification("Error", "No se pudo iniciar sesión");
+      alert('Error: ' + error.message);
     });
 };
 
-function showProfile(u) {
-  const profile = document.getElementById('profile');
-  const pname = document.getElementById('pname');
-  const pimg = document.getElementById('pimg');
+// EMAIL REGISTER
+document.getElementById('register-btn').onclick = () => {
+  const username = document.getElementById('register-username').value;
+  const email = document.getElementById('register-email').value;
+  const password = document.getElementById('register-password').value;
   
-  profile.style.display = "block";
-  pname.textContent = u.name;
-  pimg.src = u.photo;
+  if (!username || !email || !password) {
+    alert('Por favor completa todos los campos');
+    return;
+  }
   
-  document.getElementById('btn-login').style.display = 'none';
+  if (password.length < 6) {
+    alert('La contraseña debe tener al menos 6 caracteres');
+    return;
+  }
+  
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(result => {
+      // Save username to database
+      db.ref(`users/${result.user.uid}`).set({
+        username: username,
+        email: email,
+        photoURL: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(username) + '&background=667eea&color=fff'
+      });
+      
+      handleUserLogin(result.user, true, username);
+    })
+    .catch(error => {
+      alert('Error: ' + error.message);
+    });
+};
+
+function handleUserLogin(user, isNewUser = false, customUsername = null) {
+  if (customUsername) {
+    currentUser = {
+      uid: user.uid,
+      name: customUsername,
+      username: customUsername,
+      photo: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(customUsername) + '&background=667eea&color=fff',
+      email: user.email
+    };
+  } else if (isNewUser) {
+    // Check if user has username in database
+    db.ref(`users/${user.uid}`).once('value', snapshot => {
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        currentUser = {
+          uid: user.uid,
+          name: user.displayName || userData.username,
+          username: userData.username,
+          photo: user.photoURL || userData.photoURL,
+          email: user.email
+        };
+      } else {
+        currentUser = {
+          uid: user.uid,
+          name: user.displayName,
+          username: user.displayName,
+          photo: user.photoURL,
+          email: user.email
+        };
+        
+        // Save to database
+        db.ref(`users/${user.uid}`).set({
+          username: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL
+        });
+      }
+      showProfile(currentUser);
+    });
+  } else {
+    db.ref(`users/${user.uid}`).once('value', snapshot => {
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        currentUser = {
+          uid: user.uid,
+          name: user.displayName || userData.username,
+          username: userData.username,
+          photo: user.photoURL || userData.photoURL,
+          email: user.email
+        };
+      } else {
+        currentUser = {
+          uid: user.uid,
+          name: user.displayName,
+          username: user.displayName || user.email.split('@')[0],
+          photo: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email) + '&background=667eea&color=fff',
+          email: user.email
+        };
+      }
+      showProfile(currentUser);
+    });
+  }
+  
+  localStorage.setItem('user', JSON.stringify(currentUser));
+  document.getElementById('login-modal').classList.remove('active');
+  loadUserStats(user.uid);
 }
 
-// Load user stats from Firebase
+function showProfile(user) {
+  const profile = document.getElementById('profile');
+  const pname = document.getElementById('pname');
+  const pusername = document.getElementById('pusername');
+  const pimg = document.getElementById('pimg');
+  
+  profile.style.display = 'block';
+  pname.textContent = user.name;
+  pusername.textContent = '@' + (user.username || user.name);
+  pimg.src = user.photo;
+}
+
 function loadUserStats(uid) {
   db.ref(`stats/${uid}`).once('value', snapshot => {
     if (snapshot.exists()) {
@@ -677,375 +1203,332 @@ function loadUserStats(uid) {
   });
 }
 
-// Save stats to Firebase
 function saveStats(uid) {
+  if (!uid) return;
   db.ref(`stats/${uid}`).set(stats);
 }
 
-const user = JSON.parse(localStorage.getItem("user"));
-if (user) {
-  showProfile(user);
-  loadUserStats(user.uid);
+// MAP INITIALIZATION
+function initMap() {
+  map = L.map("map", {
+    zoomControl: false
+  }).setView([40.4168, -3.7038], 13);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "© OpenStreetMap contributors"
+  }).addTo(map);
+
+  L.control.zoom({
+    position: 'bottomleft'
+  }).addTo(map);
+  
+  // Hide loading screen
+  setTimeout(() => {
+    document.getElementById('loading-screen').classList.add('hidden');
+    
+    // Check if user is logged in
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      // Show login modal
+      setTimeout(() => {
+        document.getElementById('login-modal').classList.add('active');
+      }, 500);
+    } else {
+      currentUser = JSON.parse(storedUser);
+      showProfile(currentUser);
+      loadUserStats(currentUser.uid);
+    }
+  }, 1500);
 }
 
-// GEOCODING HELPER
-async function geocode(address) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  if (data.length > 0) {
-    return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-  }
-  return null;
+// SEARCH FUNCTIONALITY
+document.getElementById('search-btn').onclick = performSearch;
+document.getElementById('search-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') performSearch();
+});
+
+function quickSearch(type) {
+  document.getElementById('search-input').value = type;
+  performSearch();
 }
 
-// NAVIGATION (OSRM)
-document.getElementById('btn-route').onclick = async () => {
-  const fromAddr = document.getElementById('from').value;
-  const toAddr = document.getElementById('to').value;
-
-  if (!fromAddr || !toAddr) {
-    showNotification("Error", "Por favor ingresa origen y destino");
+async function performSearch() {
+  const query = document.getElementById('search-input').value;
+  
+  if (!query) {
+    alert('Por favor ingresa algo para buscar');
     return;
   }
-
-  document.getElementById('info').innerHTML = "<b>⏳ Calculando ruta...</b>";
-
+  
+  // Show loading in results
+  const resultsModal = document.getElementById('results-modal');
+  const resultsList = document.getElementById('results-list');
+  resultsList.innerHTML = '<p>🔍 Buscando...</p>';
+  resultsModal.classList.add('active');
+  
   try {
-    const fromCoords = await geocode(fromAddr);
-    const toCoords = await geocode(toAddr);
-
-    if (!fromCoords || !toCoords) {
-      showNotification("Error", "No se pudo encontrar una de las direcciones");
-      return;
-    }
-
-    if (routeLine) map.removeLayer(routeLine);
-
-    const url = `https://router.project-osrm.org/route/v1/driving/${fromCoords.lon},${fromCoords.lat};${toCoords.lon},${toCoords.lat}?overview=full&steps=true`;
+    // Search using Nominatim
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&addressdetails=1`;
     const res = await fetch(url);
     const data = await res.json();
-
-    if (!data.routes || data.routes.length === 0) {
-      showNotification("Error", "No se pudo calcular la ruta");
+    
+    if (data.length === 0) {
+      resultsList.innerHTML = '<p>No se encontraron resultados</p>';
       return;
     }
-
-    const coords = polyline.decode(data.routes[0].geometry).map(c => [c[0], c[1]]);
     
-    routeLine = L.polyline(coords, {
-      color: "#667eea",
-      weight: 5,
-      opacity: 0.8,
-      lineJoin: 'round'
-    }).addTo(map);
-    
-    map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
-
-    // Add start and end markers
-    L.marker([fromCoords.lat, fromCoords.lon]).addTo(map)
-      .bindTooltip("Origen", { permanent: true, direction: 'top' });
-    L.marker([toCoords.lat, toCoords.lon]).addTo(map)
-      .bindTooltip("Destino", { permanent: true, direction: 'top' });
-
-    const duration = Math.round(data.routes[0].duration / 60);
-    const distance = (data.routes[0].distance / 1000).toFixed(1);
-
-    document.getElementById('info').innerHTML = `<b>🎉 Ruta calculada</b><br>⏱️ Tiempo: ${duration} min<br>📏 Distancia: ${distance} km<br><br>`;
-    
-    data.routes[0].legs[0].steps.forEach((s, i) => {
-      document.getElementById('info').innerHTML += `${i + 1}. ${s.maneuver.instruction}<br>`;
-    });
-
-    stats.routes++;
-    updateStats();
-    if (user) saveStats(user.uid);
-    
-    showNotification("Ruta lista", `${distance} km en ${duration} minutos`);
-
-  } catch (error) {
-    console.error("Error en navegación:", error);
-    showNotification("Error", "Hubo un problema al calcular la ruta");
-  }
-};
-
-// Simple polyline decoder
-const polyline = {
-  decode: function(str, precision) {
-    let index = 0,
-        lat = 0,
-        lng = 0,
-        coordinates = [],
-        shift = 0,
-        result = 0,
-        byte = null,
-        latitude_change,
-        longitude_change,
-        factor = Math.pow(10, precision || 5);
-
-    while (index < str.length) {
-      byte = null;
-      shift = 0;
-      result = 0;
-
-      do {
-        byte = str.charCodeAt(index++) - 63;
-        result |= (byte & 0x1f) << shift;
-        shift += 5;
-      } while (byte >= 0x20);
-
-      latitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
-
-      shift = result = 0;
-
-      do {
-        byte = str.charCodeAt(index++) - 63;
-        result |= (byte & 0x1f) << shift;
-        shift += 5;
-      } while (byte >= 0x20);
-
-      longitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
-
-      lat += latitude_change;
-      lng += longitude_change;
-
-      coordinates.push([lat / factor, lng / factor]);
-    }
-
-    return coordinates;
-  }
-};
-
-// POIS
-async function loadPOIs() {
-  poiLayer.clearLayers();
-  document.getElementById('info').innerHTML = "<b>⏳ Cargando lugares...</b>";
-  
-  const b = map.getBounds();
-  const query = `[out:json][timeout:25];
-    (
-      node["amenity"~"restaurant|cafe|bar|fast_food"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
-      node["tourism"~"museum|attraction"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
-      node["shop"~"supermarket|mall"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
-    );
-    out body;`;
-
-  try {
-    const res = await fetch(
-      "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query)
-    );
-    const data = await res.json();
-
-    if (!data.elements || data.elements.length === 0) {
-      document.getElementById('info').innerHTML = "<b>No se encontraron lugares en esta área</b>";
-      return;
-    }
-
-    poiLayer.addTo(map);
-    let count = 0;
-
-    data.elements.forEach(e => {
-      if (!e.lat || !e.lon) return;
-      
-      const name = e.tags.name || "Lugar sin nombre";
-      const type = e.tags.amenity || e.tags.tourism || e.tags.shop || "lugar";
-      
-      const icon = getIconForType(type);
-      
-      const marker = L.circleMarker([e.lat, e.lon], {
-        radius: 8,
-        color: "#667eea",
-        fillColor: "#764ba2",
-        fillOpacity: 0.8,
-        weight: 2
-      }).addTo(poiLayer);
-
-      marker.bindTooltip(`${icon} ${name}`);
-
-      marker.on("click", () => {
-        if (user) {
-          db.ref(`history/${user.uid}`).push({
-            name,
-            type,
-            lat: e.lat,
-            lon: e.lon,
-            time: Date.now()
-          });
-          
-          stats.visits++;
-          updateStats();
-          saveStats(user.uid);
-        }
-        
-        showNotification("Lugar visitado", `Has marcado: ${name}`);
-        
-        marker.setStyle({
-          color: "#f5b301",
-          fillColor: "#f5b301"
-        });
+    if (data.length === 1) {
+      // Show place detail directly
+      closeResultsModal();
+      showPlaceDetail(data[0]);
+    } else {
+      // Show results list
+      resultsList.innerHTML = '';
+      data.forEach(place => {
+        const item = document.createElement('div');
+        item.className = 'result-item';
+        item.innerHTML = `
+          <h4>${place.display_name.split(',')[0]}</h4>
+          <p>${place.display_name}</p>
+        `;
+        item.onclick = () => {
+          closeResultsModal();
+          showPlaceDetail(place);
+        };
+        resultsList.appendChild(item);
       });
-      
-      count++;
-    });
-
-    stats.places = count;
-    updateStats();
-    if (user) saveStats(user.uid);
+    }
     
-    document.getElementById('info').innerHTML = `<b>✅ ${count} lugares encontrados</b><br>Haz clic en los marcadores para marcarlos como visitados.`;
+    stats.places = data.length;
+    updateStats();
+    if (currentUser) saveStats(currentUser.uid);
     
   } catch (error) {
-    console.error("Error loading POIs:", error);
-    document.getElementById('info').innerHTML = "<b>❌ Error al cargar lugares</b>";
+    console.error('Error searching:', error);
+    resultsList.innerHTML = '<p>Error en la búsqueda</p>';
   }
 }
 
-function getIconForType(type) {
-  const icons = {
-    restaurant: "🍽️",
-    cafe: "☕",
-    bar: "🍺",
-    fast_food: "🍔",
-    museum: "🏛️",
-    attraction: "🎭",
-    supermarket: "🛒",
-    mall: "🏬",
-    default: "📍"
-  };
-  return icons[type] || icons.default;
+function closeResultsModal() {
+  document.getElementById('results-modal').classList.remove('active');
 }
 
-document.getElementById('btn-poi').onclick = loadPOIs;
-
-// HISTORY
-document.getElementById('btn-history').onclick = () => {
-  if (!user) {
-    showNotification("Login requerido", "Inicia sesión para ver tu historial");
-    return;
+// PLACE DETAIL
+async function showPlaceDetail(place) {
+  currentPlaceId = place.place_id;
+  
+  const modal = document.getElementById('place-detail-modal');
+  const placeName = document.getElementById('place-name');
+  const placeAddress = document.getElementById('place-address');
+  const placeImages = document.getElementById('place-images');
+  
+  placeName.textContent = place.display_name.split(',')[0];
+  placeAddress.textContent = place.display_name;
+  
+  // Center map on place
+  map.setView([place.lat, place.lon], 15);
+  L.marker([place.lat, place.lon]).addTo(map)
+    .bindPopup(place.display_name.split(',')[0])
+    .openPopup();
+  
+  // Load images (using Unsplash as example)
+  placeImages.innerHTML = '<p>📸 Cargando imágenes...</p>';
+  try {
+    const imageQuery = encodeURIComponent(place.display_name.split(',')[0]);
+    // Using placeholder images
+    const placeholders = [
+      `https://source.unsplash.com/400x300/?${imageQuery},place`,
+      `https://source.unsplash.com/400x300/?${imageQuery},architecture`,
+      `https://source.unsplash.com/400x300/?${imageQuery},interior`,
+      `https://source.unsplash.com/400x300/?${imageQuery},exterior`
+    ];
+    
+    placeImages.innerHTML = '';
+    placeholders.forEach((url, i) => {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = `Image ${i + 1}`;
+      img.onerror = () => {
+        img.src = `https://via.placeholder.com/400x300/667eea/ffffff?text=${place.display_name.split(',')[0]}`;
+      };
+      placeImages.appendChild(img);
+    });
+  } catch (error) {
+    placeImages.innerHTML = '<p>No se pudieron cargar las imágenes</p>';
   }
   
-  document.getElementById('info').innerHTML = "<b>📜 Historial de visitas:</b><br>";
+  // Load reviews
+  loadReviews(place.place_id);
   
-  db.ref(`history/${user.uid}`).limitToLast(10).once("value", snapshot => {
-    if (!snapshot.exists()) {
-      document.getElementById('info').innerHTML += "<i>No hay visitas registradas aún</i>";
-      return;
-    }
+  modal.classList.add('active');
+  
+  stats.visits++;
+  updateStats();
+  if (currentUser) {
+    saveStats(currentUser.uid);
     
-    const visits = [];
-    snapshot.forEach(childSnapshot => {
-      visits.push(childSnapshot.val());
+    // Save to history
+    db.ref(`history/${currentUser.uid}`).push({
+      name: place.display_name.split(',')[0],
+      address: place.display_name,
+      lat: place.lat,
+      lon: place.lon,
+      time: Date.now()
     });
-    
-    visits.reverse().forEach((v, i) => {
-      const date = new Date(v.time).toLocaleDateString('es-ES');
-      document.getElementById('info').innerHTML += `${i + 1}. ${getIconForType(v.type)} ${v.name} <small>(${date})</small><br>`;
-    });
-  });
-};
-
-// RECOMMENDATIONS
-document.getElementById('btn-reco').onclick = () => {
-  if (!user) {
-    showNotification("Login requerido", "Inicia sesión para ver recomendaciones");
-    return;
   }
-  
-  document.getElementById('info').innerHTML = "<b>⭐ Recomendaciones personalizadas:</b><br>";
-  
-  db.ref(`history/${user.uid}`).once("value", snapshot => {
-    if (!snapshot.exists()) {
-      document.getElementById('info').innerHTML += "<i>Visita algunos lugares para recibir recomendaciones</i>";
-      return;
-    }
-    
-    const types = {};
-    snapshot.forEach(childSnapshot => {
-      const type = childSnapshot.val().type || 'lugar';
-      types[type] = (types[type] || 0) + 1;
-    });
-    
-    const topType = Object.keys(types).reduce((a, b) => types[a] > types[b] ? a : b);
-    
-    document.getElementById('info').innerHTML += `Basado en tu historial, te gustan los ${getIconForType(topType)} <b>${topType}s</b>.<br><br>`;
-    document.getElementById('info').innerHTML += "💡 Te recomendamos explorar más lugares de este tipo en tu zona.";
-  });
-};
+}
 
-// LOCATE USER
-document.getElementById('btn-locate').onclick = () => {
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        
-        map.setView([lat, lon], 15);
-        
-        if (userMarker) {
-          map.removeLayer(userMarker);
-        }
-        
-        userMarker = L.circleMarker([lat, lon], {
-          radius: 10,
-          color: "#667eea",
-          fillColor: "#667eea",
-          fillOpacity: 0.8,
-          weight: 3,
-          className: 'marker-pulse'
-        }).addTo(map);
-        
-        userMarker.bindTooltip("📍 Tu ubicación", { permanent: false });
-        
-        showNotification("Ubicación encontrada", "Te hemos localizado en el mapa");
-      },
-      error => {
-        showNotification("Error", "No se pudo obtener tu ubicación");
-      }
-    );
+function closePlaceDetail() {
+  document.getElementById('place-detail-modal').classList.remove('active');
+}
+
+// SPEAK FUNCTIONALITY
+document.getElementById('speak-btn').onclick = () => {
+  const placeName = document.getElementById('place-name').textContent;
+  const placeAddress = document.getElementById('place-address').textContent;
+  const text = currentLang === 'es' 
+    ? `${placeName}. Ubicado en ${placeAddress}` 
+    : `${placeName}. Located at ${placeAddress}`;
+  
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = currentLang === 'es' ? 'es-ES' : 'en-US';
+    speechSynthesis.speak(utterance);
   } else {
-    showNotification("Error", "Tu navegador no soporta geolocalización");
+    alert('Tu navegador no soporta síntesis de voz');
   }
+};
+
+// REVIEWS SYSTEM
+function loadReviews(placeId) {
+  const reviewsList = document.getElementById('reviews-list');
+  reviewsList.innerHTML = '';
+  
+  db.ref(`reviews/${placeId}`).once('value', snapshot => {
+    if (!snapshot.exists()) {
+      reviewsList.innerHTML = '<p style="text-align: center; color: #999;">No hay reseñas aún. ¡Sé el primero!</p>';
+      document.getElementById('avg-rating').textContent = '0';
+      document.getElementById('rating-stars').textContent = '☆☆☆☆☆';
+      document.getElementById('review-count').textContent = '0';
+      return;
+    }
+    
+    const reviews = [];
+    let totalRating = 0;
+    
+    snapshot.forEach(childSnapshot => {
+      const review = childSnapshot.val();
+      review.id = childSnapshot.key;
+      reviews.push(review);
+      totalRating += review.rating;
+    });
+    
+    // Calculate average
+    const avgRating = (totalRating / reviews.length).toFixed(1);
+    document.getElementById('avg-rating').textContent = avgRating;
+    document.getElementById('review-count').textContent = reviews.length;
+    
+    const fullStars = Math.floor(avgRating);
+    const emptyStars = 5 - fullStars;
+    document.getElementById('rating-stars').textContent = '★'.repeat(fullStars) + '☆'.repeat(emptyStars);
+    
+    // Sort by most recent
+    reviews.sort((a, b) => b.time - a.time);
+    
+    // Display reviews
+    reviews.forEach(review => {
+      const item = document.createElement('div');
+      item.className = 'review-item';
+      item.dataset.rating = review.rating;
+      
+      const date = new Date(review.time).toLocaleDateString(currentLang === 'es' ? 'es-ES' : 'en-US');
+      const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+      
+      item.innerHTML = `
+        <div class="review-header">
+          <div class="review-user">
+            <img src="${review.userPhoto}" alt="${review.userName}">
+            <div class="review-user-info">
+              <h4>${review.userName}</h4>
+              <p>${date}</p>
+            </div>
+          </div>
+          <div class="review-stars">${stars}</div>
+        </div>
+        <p class="review-text">${review.text}</p>
+      `;
+      
+      reviewsList.appendChild(item);
+    });
+  });
+}
+
+// REVIEW FILTERS
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    const filter = btn.dataset.filter;
+    const reviews = document.querySelectorAll('.review-item');
+    
+    if (filter === 'all') {
+      reviews.forEach(r => r.style.display = 'block');
+    } else if (filter === 'recent') {
+      // Already sorted by recent
+      reviews.forEach(r => r.style.display = 'block');
+    } else {
+      reviews.forEach(r => {
+        if (r.dataset.rating === filter) {
+          r.style.display = 'block';
+        } else {
+          r.style.display = 'none';
+        }
+      });
+    }
+  });
+});
+
+// ADD REVIEW
+document.getElementById('add-review-btn').onclick = () => {
+  if (!currentUser) {
+    alert('Debes iniciar sesión para añadir una reseña');
+    return;
+  }
+  
+  const rating = prompt('Calificación (1-5 estrellas):');
+  if (!rating || rating < 1 || rating > 5) {
+    alert('Calificación inválida');
+    return;
+  }
+  
+  const text = prompt('Escribe tu reseña:');
+  if (!text) return;
+  
+  db.ref(`reviews/${currentPlaceId}`).push({
+    userId: currentUser.uid,
+    userName: currentUser.name,
+    userPhoto: currentUser.photo,
+    rating: parseInt(rating),
+    text: text,
+    time: Date.now()
+  }).then(() => {
+    alert('¡Reseña añadida con éxito!');
+    loadReviews(currentPlaceId);
+  });
 };
 
 // LANGUAGE TOGGLE
-let currentLang = 'es';
 document.getElementById('btn-lang').onclick = () => {
   currentLang = currentLang === 'es' ? 'en' : 'es';
   
   if (currentLang === 'en') {
-    document.getElementById('from').placeholder = "From (e.g. Madrid)";
-    document.getElementById('to').placeholder = "To (e.g. Barcelona)";
-    document.getElementById('btn-route').innerHTML = "🚀 Start Navigation";
-    document.getElementById('btn-poi').innerHTML = "📌 Show Places";
-    document.getElementById('btn-history').innerHTML = "🕐 History";
-    document.getElementById('btn-reco').innerHTML = "⭐ Recommendations";
-    showNotification("Language changed", "Interface now in English");
+    document.getElementById('search-input').placeholder = "Search restaurants, places...";
   } else {
-    document.getElementById('from').placeholder = "Desde (ej: Madrid)";
-    document.getElementById('to').placeholder = "Hasta (ej: Barcelona)";
-    document.getElementById('btn-route').innerHTML = "🚀 Iniciar Navegación";
-    document.getElementById('btn-poi').innerHTML = "📌 Mostrar Lugares";
-    document.getElementById('btn-history').innerHTML = "🕐 Historial";
-    document.getElementById('btn-reco').innerHTML = "⭐ Recomendaciones";
-    showNotification("Idioma cambiado", "Interfaz ahora en Español");
+    document.getElementById('search-input').placeholder = "Buscar restaurantes, lugares...";
   }
 };
-
-// NOTIFICATIONS
-function showNotification(title, body) {
-  if ("Notification" in window && Notification.permission === "granted") {
-    new Notification(title, { 
-      body,
-      icon: "https://cdn-icons-png.flaticon.com/512/854/854878.png"
-    });
-  }
-}
-
-// Request notification permission
-if ("Notification" in window && Notification.permission === "default") {
-  Notification.requestPermission();
-}
 
 // INITIALIZE
 window.onload = initMap;
