@@ -483,6 +483,58 @@ html, body {
   display: flex;
 }
 
+/* ROUTE MODAL */
+#route-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+#route-modal.active {
+  display: flex;
+}
+
+.route-box {
+  background: white;
+  padding: 30px;
+  border-radius: 24px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideInUp 0.4s ease;
+  position: relative;
+}
+
+.route-box h3 {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.route-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.route-box::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.route-box::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
+}
+
 .place-detail-box {
   background: white;
   border-radius: 24px;
@@ -505,6 +557,26 @@ html, body {
 .place-header h2 {
   margin: 0 0 15px 0;
   font-size: 32px;
+}
+
+.route-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 30px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.route-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .speak-btn {
@@ -908,6 +980,7 @@ html, body {
       <button class="speak-btn" id="speak-btn">🔊</button>
       <h2 id="place-name">Nombre del Lugar</h2>
       <p class="place-address" id="place-address">Dirección</p>
+      <button class="route-btn" id="route-btn">🚗 Cómo llegar</button>
     </div>
     
     <div class="place-images" id="place-images">
@@ -940,6 +1013,37 @@ html, body {
       </div>
       
       <button class="add-review-btn" id="add-review-btn">✍️ Añadir Reseña</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROUTE MODAL -->
+<div id="route-modal">
+  <div class="route-box">
+    <button class="close-modal" onclick="closeRouteModal()">✕</button>
+    <h3>🚗 Planifica tu ruta</h3>
+    
+    <div class="input-group">
+      <input type="text" id="route-from" placeholder="Desde (deja vacío para usar tu ubicación)">
+    </div>
+    
+    <div style="text-align: center; margin: 10px 0; color: #999;">
+      ↓
+    </div>
+    
+    <div class="input-group">
+      <input type="text" id="route-to" placeholder="Hasta" readonly>
+    </div>
+    
+    <button class="btn btn-primary" id="calculate-route-btn">🗺️ Calcular Ruta</button>
+    
+    <div id="route-info" style="margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 12px; display: none;">
+      <h4 style="margin: 0 0 10px 0; color: #667eea;">Información de la ruta</h4>
+      <p style="margin: 5px 0; font-size: 14px;"><strong>⏱️ Duración:</strong> <span id="route-duration">-</span></p>
+      <p style="margin: 5px 0; font-size: 14px;"><strong>📏 Distancia:</strong> <span id="route-distance">-</span></p>
+      <div id="route-steps" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
+        <!-- Steps will be loaded here -->
+      </div>
     </div>
   </div>
 </div>
@@ -1010,6 +1114,10 @@ let currentUser = null;
 let currentLang = 'es';
 let map;
 let currentPlaceId = null;
+let currentPlace = null;
+let routeLine = null;
+let startMarker = null;
+let endMarker = null;
 
 // STATS
 let stats = {
@@ -1316,26 +1424,34 @@ function closeResultsModal() {
 
 // PLACE DETAIL
 async function showPlaceDetail(place) {
-  currentPlaceId = place.place_id;
+  currentPlaceId = place.place_id || place.osm_id || `place_${place.lat}_${place.lon}`;
+  currentPlace = place;
   
   const modal = document.getElementById('place-detail-modal');
   const placeName = document.getElementById('place-name');
   const placeAddress = document.getElementById('place-address');
   const placeImages = document.getElementById('place-images');
   
-  placeName.textContent = place.display_name.split(',')[0];
-  placeAddress.textContent = place.display_name;
+  const displayName = place.display_name || place.name || 'Lugar';
+  placeName.textContent = displayName.split(',')[0];
+  placeAddress.textContent = displayName;
   
   // Center map on place
   map.setView([place.lat, place.lon], 15);
-  L.marker([place.lat, place.lon]).addTo(map)
-    .bindPopup(place.display_name.split(',')[0])
+  
+  // Remove old markers
+  if (endMarker) {
+    map.removeLayer(endMarker);
+  }
+  
+  endMarker = L.marker([place.lat, place.lon]).addTo(map)
+    .bindPopup(displayName.split(',')[0])
     .openPopup();
   
   // Load images (using Unsplash as example)
   placeImages.innerHTML = '<p>📸 Cargando imágenes...</p>';
   try {
-    const imageQuery = encodeURIComponent(place.display_name.split(',')[0]);
+    const imageQuery = encodeURIComponent(displayName.split(',')[0]);
     // Using placeholder images
     const placeholders = [
       `https://source.unsplash.com/400x300/?${imageQuery},place`,
@@ -1350,7 +1466,7 @@ async function showPlaceDetail(place) {
       img.src = url;
       img.alt = `Image ${i + 1}`;
       img.onerror = () => {
-        img.src = `https://via.placeholder.com/400x300/667eea/ffffff?text=${place.display_name.split(',')[0]}`;
+        img.src = `https://via.placeholder.com/400x300/667eea/ffffff?text=${displayName.split(',')[0]}`;
       };
       placeImages.appendChild(img);
     });
@@ -1359,7 +1475,7 @@ async function showPlaceDetail(place) {
   }
   
   // Load reviews
-  loadReviews(place.place_id);
+  loadReviews(currentPlaceId);
   
   modal.classList.add('active');
   
@@ -1370,8 +1486,8 @@ async function showPlaceDetail(place) {
     
     // Save to history
     db.ref(`history/${currentUser.uid}`).push({
-      name: place.display_name.split(',')[0],
-      address: place.display_name,
+      name: displayName.split(',')[0],
+      address: displayName,
       lat: place.lat,
       lon: place.lon,
       time: Date.now()
@@ -1403,65 +1519,77 @@ document.getElementById('speak-btn').onclick = () => {
 // REVIEWS SYSTEM
 function loadReviews(placeId) {
   const reviewsList = document.getElementById('reviews-list');
-  reviewsList.innerHTML = '';
+  const avgRatingEl = document.getElementById('avg-rating');
+  const ratingStarsEl = document.getElementById('rating-stars');
+  const reviewCountEl = document.getElementById('review-count');
   
-  db.ref(`reviews/${placeId}`).once('value', snapshot => {
-    if (!snapshot.exists()) {
-      reviewsList.innerHTML = '<p style="text-align: center; color: #999;">No hay reseñas aún. ¡Sé el primero!</p>';
-      document.getElementById('avg-rating').textContent = '0';
-      document.getElementById('rating-stars').textContent = '☆☆☆☆☆';
-      document.getElementById('review-count').textContent = '0';
-      return;
-    }
-    
-    const reviews = [];
-    let totalRating = 0;
-    
-    snapshot.forEach(childSnapshot => {
-      const review = childSnapshot.val();
-      review.id = childSnapshot.key;
-      reviews.push(review);
-      totalRating += review.rating;
-    });
-    
-    // Calculate average
-    const avgRating = (totalRating / reviews.length).toFixed(1);
-    document.getElementById('avg-rating').textContent = avgRating;
-    document.getElementById('review-count').textContent = reviews.length;
-    
-    const fullStars = Math.floor(avgRating);
-    const emptyStars = 5 - fullStars;
-    document.getElementById('rating-stars').textContent = '★'.repeat(fullStars) + '☆'.repeat(emptyStars);
-    
-    // Sort by most recent
-    reviews.sort((a, b) => b.time - a.time);
-    
-    // Display reviews
-    reviews.forEach(review => {
-      const item = document.createElement('div');
-      item.className = 'review-item';
-      item.dataset.rating = review.rating;
+  reviewsList.innerHTML = '<p style="text-align: center; color: #999;">⏳ Cargando reseñas...</p>';
+  
+  db.ref(`reviews/${placeId}`).once('value')
+    .then(snapshot => {
+      reviewsList.innerHTML = '';
       
-      const date = new Date(review.time).toLocaleDateString(currentLang === 'es' ? 'es-ES' : 'en-US');
-      const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+      if (!snapshot.exists()) {
+        reviewsList.innerHTML = '<p style="text-align: center; color: #999;">No hay reseñas aún. ¡Sé el primero!</p>';
+        avgRatingEl.textContent = '0.0';
+        ratingStarsEl.textContent = '☆☆☆☆☆';
+        reviewCountEl.textContent = '0';
+        return;
+      }
       
-      item.innerHTML = `
-        <div class="review-header">
-          <div class="review-user">
-            <img src="${review.userPhoto}" alt="${review.userName}">
-            <div class="review-user-info">
-              <h4>${review.userName}</h4>
-              <p>${date}</p>
+      const reviews = [];
+      let totalRating = 0;
+      
+      snapshot.forEach(childSnapshot => {
+        const review = childSnapshot.val();
+        review.id = childSnapshot.key;
+        reviews.push(review);
+        totalRating += review.rating;
+      });
+      
+      // Calculate average
+      const avgRating = (totalRating / reviews.length).toFixed(1);
+      avgRatingEl.textContent = avgRating;
+      reviewCountEl.textContent = reviews.length;
+      
+      const fullStars = Math.floor(avgRating);
+      const emptyStars = 5 - Math.ceil(avgRating);
+      const halfStar = avgRating % 1 >= 0.5 ? 1 : 0;
+      ratingStarsEl.textContent = '★'.repeat(fullStars) + (halfStar ? '⯨' : '') + '☆'.repeat(emptyStars);
+      
+      // Sort by most recent
+      reviews.sort((a, b) => b.time - a.time);
+      
+      // Display reviews
+      reviews.forEach(review => {
+        const item = document.createElement('div');
+        item.className = 'review-item';
+        item.dataset.rating = review.rating;
+        
+        const date = new Date(review.time).toLocaleDateString(currentLang === 'es' ? 'es-ES' : 'en-US');
+        const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+        
+        item.innerHTML = `
+          <div class="review-header">
+            <div class="review-user">
+              <img src="${review.userPhoto || 'https://via.placeholder.com/40'}" alt="${review.userName}">
+              <div class="review-user-info">
+                <h4>${review.userName}</h4>
+                <p>${date}</p>
+              </div>
             </div>
+            <div class="review-stars">${stars}</div>
           </div>
-          <div class="review-stars">${stars}</div>
-        </div>
-        <p class="review-text">${review.text}</p>
-      `;
-      
-      reviewsList.appendChild(item);
+          <p class="review-text">${review.text}</p>
+        `;
+        
+        reviewsList.appendChild(item);
+      });
+    })
+    .catch(error => {
+      console.error('Error loading reviews:', error);
+      reviewsList.innerHTML = '<p style="text-align: center; color: #f44336;">Error al cargar reseñas</p>';
     });
-  });
 }
 
 // REVIEW FILTERS
@@ -1493,30 +1621,235 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 // ADD REVIEW
 document.getElementById('add-review-btn').onclick = () => {
   if (!currentUser) {
-    alert('Debes iniciar sesión para añadir una reseña');
+    alert(currentLang === 'es' ? 'Debes iniciar sesión para añadir una reseña' : 'You must log in to add a review');
     return;
   }
   
-  const rating = prompt('Calificación (1-5 estrellas):');
-  if (!rating || rating < 1 || rating > 5) {
-    alert('Calificación inválida');
+  if (!currentPlaceId) {
+    alert(currentLang === 'es' ? 'Error: No se pudo identificar el lugar' : 'Error: Could not identify the place');
     return;
   }
   
-  const text = prompt('Escribe tu reseña:');
-  if (!text) return;
+  const rating = prompt(currentLang === 'es' ? 'Calificación (1-5 estrellas):' : 'Rating (1-5 stars):');
+  if (!rating || rating < 1 || rating > 5 || isNaN(rating)) {
+    alert(currentLang === 'es' ? 'Calificación inválida' : 'Invalid rating');
+    return;
+  }
   
-  db.ref(`reviews/${currentPlaceId}`).push({
+  const text = prompt(currentLang === 'es' ? 'Escribe tu reseña:' : 'Write your review:');
+  if (!text || text.trim() === '') {
+    alert(currentLang === 'es' ? 'La reseña no puede estar vacía' : 'Review cannot be empty');
+    return;
+  }
+  
+  const reviewData = {
     userId: currentUser.uid,
-    userName: currentUser.name,
-    userPhoto: currentUser.photo,
+    userName: currentUser.name || currentUser.username,
+    userPhoto: currentUser.photo || 'https://via.placeholder.com/40',
     rating: parseInt(rating),
-    text: text,
+    text: text.trim(),
     time: Date.now()
-  }).then(() => {
-    alert('¡Reseña añadida con éxito!');
-    loadReviews(currentPlaceId);
-  });
+  };
+  
+  db.ref(`reviews/${currentPlaceId}`).push(reviewData)
+    .then(() => {
+      alert(currentLang === 'es' ? '¡Reseña añadida con éxito!' : 'Review added successfully!');
+      loadReviews(currentPlaceId);
+    })
+    .catch(error => {
+      console.error('Error adding review:', error);
+      alert(currentLang === 'es' ? 'Error al añadir la reseña' : 'Error adding review');
+    });
+};
+
+// ROUTE FUNCTIONALITY
+document.getElementById('route-btn').onclick = () => {
+  if (!currentPlace) {
+    alert(currentLang === 'es' ? 'Error: No hay lugar seleccionado' : 'Error: No place selected');
+    return;
+  }
+  
+  const routeModal = document.getElementById('route-modal');
+  const routeTo = document.getElementById('route-to');
+  const displayName = currentPlace.display_name || currentPlace.name || 'Lugar';
+  
+  routeTo.value = displayName.split(',')[0];
+  document.getElementById('route-from').value = '';
+  document.getElementById('route-info').style.display = 'none';
+  
+  routeModal.classList.add('active');
+};
+
+function closeRouteModal() {
+  document.getElementById('route-modal').classList.remove('active');
+}
+
+// Simple polyline decoder
+const polyline = {
+  decode: function(str, precision) {
+    let index = 0,
+        lat = 0,
+        lng = 0,
+        coordinates = [],
+        shift = 0,
+        result = 0,
+        byte = null,
+        latitude_change,
+        longitude_change,
+        factor = Math.pow(10, precision || 5);
+
+    while (index < str.length) {
+      byte = null;
+      shift = 0;
+      result = 0;
+
+      do {
+        byte = str.charCodeAt(index++) - 63;
+        result |= (byte & 0x1f) << shift;
+        shift += 5;
+      } while (byte >= 0x20);
+
+      latitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+      shift = result = 0;
+
+      do {
+        byte = str.charCodeAt(index++) - 63;
+        result |= (byte & 0x1f) << shift;
+        shift += 5;
+      } while (byte >= 0x20);
+
+      longitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+
+      lat += latitude_change;
+      lng += longitude_change;
+
+      coordinates.push([lat / factor, lng / factor]);
+    }
+
+    return coordinates;
+  }
+};
+
+async function geocode(address) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.length > 0) {
+    return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+  }
+  return null;
+}
+
+document.getElementById('calculate-route-btn').onclick = async () => {
+  const fromAddr = document.getElementById('route-from').value;
+  
+  if (!currentPlace) {
+    alert(currentLang === 'es' ? 'Error: No hay destino' : 'Error: No destination');
+    return;
+  }
+  
+  const routeInfo = document.getElementById('route-info');
+  const routeSteps = document.getElementById('route-steps');
+  routeSteps.innerHTML = '<p>⏳ Calculando ruta...</p>';
+  routeInfo.style.display = 'block';
+  
+  try {
+    let fromCoords;
+    
+    if (!fromAddr || fromAddr.trim() === '') {
+      // Use current location
+      if ("geolocation" in navigator) {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+        fromCoords = {
+          lat: position.coords.latitude,
+          lon: position.coords.longitude
+        };
+      } else {
+        alert(currentLang === 'es' ? 'Geolocalización no disponible. Ingresa una dirección.' : 'Geolocation not available. Enter an address.');
+        return;
+      }
+    } else {
+      // Geocode the address
+      fromCoords = await geocode(fromAddr);
+      if (!fromCoords) {
+        alert(currentLang === 'es' ? 'No se pudo encontrar la dirección de origen' : 'Could not find the origin address');
+        return;
+      }
+    }
+    
+    const toCoords = {
+      lat: currentPlace.lat,
+      lon: currentPlace.lon
+    };
+    
+    // Remove old route
+    if (routeLine) {
+      map.removeLayer(routeLine);
+    }
+    if (startMarker) {
+      map.removeLayer(startMarker);
+    }
+    
+    // Call OSRM API
+    const url = `https://router.project-osrm.org/route/v1/driving/${fromCoords.lon},${fromCoords.lat};${toCoords.lon},${toCoords.lat}?overview=full&steps=true`;
+    const res = await fetch(url);
+    const data = await res.json();
+    
+    if (!data.routes || data.routes.length === 0) {
+      alert(currentLang === 'es' ? 'No se pudo calcular la ruta' : 'Could not calculate route');
+      return;
+    }
+    
+    const coords = polyline.decode(data.routes[0].geometry).map(c => [c[0], c[1]]);
+    
+    routeLine = L.polyline(coords, {
+      color: "#667eea",
+      weight: 5,
+      opacity: 0.8,
+      lineJoin: 'round'
+    }).addTo(map);
+    
+    map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+    
+    // Add start marker
+    startMarker = L.marker([fromCoords.lat, fromCoords.lon], {
+      icon: L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      })
+    }).addTo(map)
+      .bindTooltip(currentLang === 'es' ? "Origen" : "Start", { permanent: false, direction: 'top' });
+    
+    const duration = Math.round(data.routes[0].duration / 60);
+    const distance = (data.routes[0].distance / 1000).toFixed(1);
+    
+    document.getElementById('route-duration').textContent = `${duration} min`;
+    document.getElementById('route-distance').textContent = `${distance} km`;
+    
+    routeSteps.innerHTML = '<h5 style="margin: 0 0 10px 0; color: #667eea;">' + 
+      (currentLang === 'es' ? 'Indicaciones paso a paso:' : 'Step by step directions:') + 
+      '</h5>';
+    
+    data.routes[0].legs[0].steps.forEach((s, i) => {
+      routeSteps.innerHTML += `<p style="margin: 5px 0; font-size: 13px;"><strong>${i + 1}.</strong> ${s.maneuver.instruction}</p>`;
+    });
+    
+    stats.routes++;
+    updateStats();
+    if (currentUser) saveStats(currentUser.uid);
+    
+  } catch (error) {
+    console.error('Error calculating route:', error);
+    alert(currentLang === 'es' ? 'Error al calcular la ruta' : 'Error calculating route');
+    routeSteps.innerHTML = '<p style="color: #f44336;">Error al calcular la ruta</p>';
+  }
 };
 
 // LANGUAGE TOGGLE
