@@ -1280,7 +1280,7 @@ function handleUserLogin(user, isNewUser = false, customUsername = null) {
     });
   }
   
-  localStorage.setItem('user', JSON.stringify(currentUser));
+  localStorage.setItem('userSIU', JSON.stringify(currentUser));
   document.getElementById('login-modal').classList.remove('active');
   loadUserStats(user.uid);
 }
@@ -1336,7 +1336,7 @@ function initMap() {
     document.getElementById('loading-screen').classList.add('hidden');
     
     // Check if user is logged in
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem('userSIU');
     if (!storedUser) {
       // Show login modal
       setTimeout(() => {
