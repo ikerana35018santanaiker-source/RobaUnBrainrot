@@ -2,51 +2,143 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Mapa con POIs y Login</title>
+<title>Ikemap</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
-html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-#map { height:100%; }
-.panel { position:absolute; top:10px; left:10px; background:white; padding:12px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.25); z-index:1000; width:300px; }
-.panel input, .panel button { width:100%; margin-bottom:8px; padding:8px 10px; border-radius:6px; border:1px solid #ccc; font-size:14px; outline:none; transition:0.2s; }
-.panel input:focus { border-color:#007bff; }
-.panel button { background:#007bff; color:white; border:none; cursor:pointer; font-weight:bold; }
-.panel button:hover { background:#0056b3; }
-.info { font-size:13px; margin-top:6px; max-height:200px; overflow-y:auto; padding:6px; background:#f9f9f9; border-radius:6px; border:1px solid #ddd; }
-.top-right { position:absolute; top:10px; right:10px; z-index:1000; display:flex; flex-direction:column; gap:6px; }
-.top-right button { width:160px; font-size:13px; padding:6px 8px; }
-#profile{ background:#f0f0f0;padding:6px;border-radius:6px;display:none; text-align:center; }
-#profile img{ width:40px;height:40px;border-radius:50%;vertical-align:middle; margin-right:6px;}
+html,body{
+  margin:0;
+  height:100%;
+  font-family:system-ui,-apple-system,Segoe UI
+}
+#map{height:100%}
+
+/* BRAND */
+.brand{
+  position:absolute;
+  top:10px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:1000;
+  text-align:center;
+  pointer-events:none
+}
+.brand h1{
+  margin:0;
+  font-size:28px;
+  font-weight:700
+}
+.brand small{
+  font-size:12px;
+  color:#555
+}
+
+/* PANEL */
+.panel{
+  position:absolute;
+  top:90px;
+  left:12px;
+  width:320px;
+  background:white;
+  padding:14px;
+  border-radius:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+  z-index:1000
+}
+.panel input,.panel button{
+  width:100%;
+  padding:9px;
+  margin-bottom:8px;
+  border-radius:8px;
+  border:1px solid #ccc
+}
+.panel button{
+  background:#007bff;
+  color:white;
+  border:none;
+  font-weight:600;
+  cursor:pointer
+}
+.panel button:hover{background:#005ec4}
+
+.info{
+  background:#f6f6f6;
+  padding:8px;
+  border-radius:8px;
+  max-height:180px;
+  overflow:auto;
+  font-size:13px
+}
+
+/* TOP RIGHT */
+.top-right{
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:1000;
+  display:flex;
+  flex-direction:column;
+  gap:6px
+}
+.top-right button{
+  padding:7px 10px;
+  border-radius:8px;
+  border:none;
+  background:#111;
+  color:white;
+  cursor:pointer
+}
+
+#profile{
+  display:none;
+  background:#f2f2f2;
+  padding:8px;
+  border-radius:10px;
+  text-align:center
+}
+#profile img{
+  width:42px;
+  height:42px;
+  border-radius:50%
+}
+
+.stars{color:#f5b301}
+
+/* MOBILE */
+@media(max-width:600px){
+  .panel{width:90%;left:5%}
+}
 </style>
 </head>
 <body>
 
 <div id="map"></div>
 
+<div class="brand">
+  <h1>Ikemap</h1>
+  <small>© 2026 Iker’s Studio</small>
+</div>
+
 <div class="panel">
-  <input id="search" placeholder="Buscar lugar">
-  <button id="btn-search">🔍 Buscar</button>
   <input id="from" placeholder="Desde">
   <input id="to" placeholder="Hasta">
-  <button id="btn-route">🚗 Obtener direcciones</button>
-  <button id="btn-speak">🔊 Escuchar indicaciones</button>
-  <button id="btn-locate">📍 Mi ubicación</button>
-  <button id="btn-dark">🌙 Modo oscuro</button>
-  <button id="btn-sat">🛰 Satélite</button>
-  <button id="btn-poi">📌 Mostrar lugares</button>
-  <div class="info" id="info">Las indicaciones aparecerán aquí.</div>
+  <button id="btn-route">Iniciar navegación</button>
+
+  <button id="btn-poi">Mostrar lugares</button>
+  <button id="btn-history">Historial</button>
+  <button id="btn-reco">Recomendaciones</button>
+
+  <div class="info" id="info">Indicaciones aparecerán aquí</div>
 </div>
 
 <div class="top-right">
-  <button id="btn-language">🌐 Español / English</button>
-  <button id="btn-login">🔑 Iniciar sesión con Google</button>
+  <button id="btn-lang">ES / EN</button>
+  <button id="btn-login">Google</button>
   <div id="profile">
-    <img id="profile-pic" src="">
-    <span id="profile-name"></span><br>
-    <button id="btn-change-name">✏️ Cambiar nombre</button>
+    <img id="pimg"><br>
+    <span id="pname"></span>
   </div>
 </div>
 
@@ -56,225 +148,131 @@ html,body { margin:0; height:100%; font-family: 'Segoe UI', Tahoma, Geneva, Verd
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-// ---------- Firebase ----------
-const firebaseConfig = {
-  apiKey: "AIzaSyDiGY9FOUFwYYtyF9QGA53f4jh2rT1jab8",
-  authDomain: "ikendo-49e0c.firebaseapp.com",
-  databaseURL: "https://ikendo-49e0c-default-rtdb.firebaseio.com",
-  projectId: "ikendo-49e0c",
-  storageBucket: "ikendo-49e0c.firebasestorage.app",
-  messagingSenderId: "863938515308",
-  appId: "1:863938515308:web:ff662fe4e7ddb394052349"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
-
-// ---------- Variables ----------
-let idioma = localStorage.getItem('idioma') || 'es';
-let lastSteps = [];
-let marker, routeLine;
-let poiLayer;
-
-// ---------- Mapa ----------
-let map = L.map("map").setView([40.4168,-3.7038],13);
-const normalLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19, attribution:"© OSM"});
-const darkLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19});
-const satelliteLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19});
-normalLayer.addTo(map);
-let currentLayer = "normal";
-poiLayer = L.layerGroup().addTo(map);
-
-// ---------- Traducción ----------
-async function translateText(text,targetLang){
-  try{
-    const res = await fetch('https://libretranslate.com/translate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({q:text, source:'es', target:targetLang, format:'text'})
-    });
-    const data = await res.json();
-    return data.translatedText;
-  } catch(e){ return text; }
-}
-
-// ---------- Login Google ----------
-function showProfile(user){
-  document.getElementById('profile').style.display='block';
-  document.getElementById('profile-name').innerText = user.displayName;
-  document.getElementById('profile-pic').src = user.photoURL;
-}
-function loginGoogle(){
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).then(result=>{
-    localStorage.setItem('user', JSON.stringify({
-      displayName: result.user.displayName,
-      photoURL: result.user.photoURL,
-      uid: result.user.uid
-    }));
-    showProfile(result.user);
-    alert(`${idioma==='es'?'Bienvenido':'Welcome'} ${result.user.displayName}`);
-  }).catch(e=>alert(`Error: ${e.message}`));
-}
-function changeName(){
-  const newName = prompt(idioma==='es'?'Ingresa tu nuevo nombre':'Enter your new name');
-  if(newName && auth.currentUser){
-    auth.currentUser.updateProfile({displayName:newName}).then(()=>{
-      document.getElementById('profile-name').innerText = newName;
-      const user = JSON.parse(localStorage.getItem('user'));
-      user.displayName = newName;
-      localStorage.setItem('user', JSON.stringify(user));
-    });
-  }
-}
-
-// ---------- Cargar sesión ----------
-window.addEventListener('load', ()=>{
-  const savedUser = localStorage.getItem('user');
-  if(savedUser){
-    showProfile(JSON.parse(savedUser));
-  }
+/* FIREBASE */
+firebase.initializeApp({
+  apiKey:"AIzaSyDiGY9FOUFwYYtyF9QGA53f4jh2rT1jab8",
+  authDomain:"ikendo-49e0c.firebaseapp.com",
+  databaseURL:"https://ikendo-49e0c-default-rtdb.firebaseio.com",
+  projectId:"ikendo-49e0c"
 });
+const auth=firebase.auth();
+const db=firebase.database();
 
-// ---------- Traducción botones ----------
-async function updateTexts(){
-  const textsES = {
-    search:"Buscar lugar", from:"Desde", to:"Hasta", route:"🚗 Obtener direcciones",
-    speak:"🔊 Escuchar indicaciones", locate:"📍 Mi ubicación", dark:"🌙 Modo oscuro",
-    sat:"🛰 Satélite", poi:"📌 Mostrar lugares", infoDefault:"Las indicaciones aparecerán aquí.",
-    login:"🔑 Iniciar sesión con Google", language:"🌐 Español / English", changeName:"✏️ Cambiar nombre"
-  };
-  for(let key in textsES){
-    let el = document.getElementById(`btn-${key}`) || document.getElementById('btn-change-name');
-    if(el){
-      if(idioma==='es') el.innerText = textsES[key];
-      else el.innerText = await translateText(textsES[key],'en');
-    }
-  }
-  document.getElementById('search').placeholder = idioma==='es'? textsES.search : await translateText(textsES.search,'en');
-  document.getElementById('from').placeholder = idioma==='es'? textsES.from : await translateText(textsES.from,'en');
-  document.getElementById('to').placeholder = idioma==='es'? textsES.to : await translateText(textsES.to,'en');
-  document.getElementById('info').innerText = idioma==='es'? textsES.infoDefault : await translateText(textsES.infoDefault,'en');
-}
-async function toggleLanguage(){
-  idioma = idioma==='es'?'en':'es';
-  localStorage.setItem('idioma', idioma);
-  updateTexts();
-  loadPOIs(); // recarga POIs con traducción
-}
-updateTexts();
+/* MAP */
+const map=L.map("map").setView([40.4168,-3.7038],13);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  maxZoom:19,
+  attribution:"© OpenStreetMap"
+}).addTo(map);
 
-// ---------- Funciones mapa ----------
-async function searchPlace(){
-  const q=document.getElementById("search").value; if(!q) return;
-  const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}`);
-  const data=await res.json();
-  if(!data[0]) return;
-  const lat=data[0].lat, lon=data[0].lon;
-  if(marker) map.removeLayer(marker);
-  marker=L.marker([lat,lon]).addTo(map);
-  map.setView([lat,lon],15);
+const poiLayer=L.layerGroup().addTo(map);
+let routeLine;
+
+/* LOGIN GOOGLE */
+btn-login.onclick=()=>{
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+  .then(r=>{
+    const u={
+      uid:r.user.uid,
+      name:r.user.displayName,
+      photo:r.user.photoURL
+    };
+    localStorage.setItem("user",JSON.stringify(u));
+    showProfile(u);
+  });
+};
+
+function showProfile(u){
+  profile.style.display="block";
+  pname.textContent=u.name;
+  pimg.src=u.photo;
 }
-async function geocode(text){
-  const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${text}`);
+
+const user=JSON.parse(localStorage.getItem("user"));
+if(user)showProfile(user);
+
+/* NAVIGATION (OSRM) */
+btn-route.onclick=async()=>{
+  if(routeLine)map.removeLayer(routeLine);
+
+  const res=await fetch(
+    "https://router.project-osrm.org/route/v1/driving/-3.7038,40.4168;-3.69,40.41?overview=full&steps=true"
+  );
   const data=await res.json();
-  return data[0];
-}
-async function route(){
-  const from=document.getElementById("from").value;
-  const to=document.getElementById("to").value;
-  if(!from||!to) return;
-  const f=await geocode(from), t=await geocode(to);
-  if(!f||!t) return;
-  const url=`https://router.project-osrm.org/route/v1/driving/${f.lon},${f.lat};${t.lon},${t.lat}?overview=full&geometries=geojson&steps=true`;
-  const res=await fetch(url);
-  const data=await res.json();
-  const routeData=data.routes[0];
-  const coords=routeData.geometry.coordinates.map(c=>[c[1],c[0]]);
-  if(routeLine) map.removeLayer(routeLine);
-  routeLine=L.polyline(coords,{weight:5,color:"#007bff"}).addTo(map);
+
+  const coords=data.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+  routeLine=L.polyline(coords,{color:"#007bff"}).addTo(map);
   map.fitBounds(routeLine.getBounds());
 
-  const steps = routeData.legs[0].steps.map((s,i)=>{
-    const tipo=s.maneuver.type||'';
-    const mod=s.maneuver.modifier?` (${s.maneuver.modifier})`:'';
-    const calle=s.name||'';
-    return idioma==='es'? `${i+1}. ${tipo}${mod} en ${calle}` : `${i+1}. ${tipo}${mod} on ${calle}`;
+  info.innerHTML="<b>Navegación:</b><br>";
+  data.routes[0].legs[0].steps.forEach((s,i)=>{
+    info.innerHTML+=`${i+1}. ${s.maneuver.instruction}<br>`;
   });
-  lastSteps = steps;
-  document.getElementById("info").innerHTML=`<b>${idioma==='es'?'Indicaciones':'Directions'}:</b><br>`+steps.join("<br>");
-}
-function readDirections(){ if(lastSteps.length===0)return; if('speechSynthesis' in window){ speechSynthesis.cancel(); lastSteps.forEach(s=>speechSynthesis.speak(new SpeechSynthesisUtterance(s))); } }
-function locate(){ map.locate({setView:true,maxZoom:16}); map.on("locationfound",e=>{ L.marker(e.latlng).addTo(map).bindPopup(idioma==='es'?"Tú estás aquí":"You are here").openPopup(); }); }
-function toggleDark(){ map.eachLayer(l=>map.removeLayer(l)); currentLayer=currentLayer==="dark"?"normal":"dark"; (currentLayer==="dark"?darkLayer:normalLayer).addTo(map); }
-function toggleSatellite(){ map.eachLayer(l=>map.removeLayer(l)); satelliteLayer.addTo(map); currentLayer="satellite"; }
+};
 
-// ---------- POIs ----------
+/* POIS */
 async function loadPOIs(){
   poiLayer.clearLayers();
-  const bbox = map.getBounds();
-  const query = `[out:json][timeout:25];
-    (
-      node["amenity"="restaurant"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
-      node["amenity"="cafe"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
-      node["tourism"="museum"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
-      node["shop"](${bbox.getSouth()},${bbox.getWest()},${bbox.getNorth()},${bbox.getEast()});
-    ); out body;`;
-  const url='https://overpass-api.de/api/interpreter?data='+encodeURIComponent(query);
-  const res=await fetch(url);
-  const data = await res.json();
-  data.elements.forEach(async e=>{
-    if(e.lat && e.lon){
-      const id = e.id;
-      let name = e.tags.name || (idioma==='es'?"Sin nombre":"Unnamed");
-      let type = e.tags.amenity || e.tags.shop || e.tags.tourism || (idioma==='es'?"Lugar":"Place");
-      if(idioma!=='es'){
-        name = await translateText(name,'en');
-        type = await translateText(type,'en');
-      }
-      const m = L.marker([e.lat,e.lon]).addTo(poiLayer);
-      const popupHTML=`<b>${name}</b><br>${type}<br><button onclick="addReview('${id}','${name}')">${idioma==='es'?'Escribir reseña':'Write review'}</button><div id="reviews-${id}"></div>`;
-      m.bindPopup(popupHTML);
-      loadReviews(id);
-    }
-  });
-}
+  const b=map.getBounds();
+  const q=`[out:json];
+  (node["amenity"~"restaurant|cafe|bar"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});
+   node["shop"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}));out;`;
 
-// Reseñas
-function addReview(poiId, poiName){
-  const user = JSON.parse(localStorage.getItem('user'));
-  if(!user){ alert(idioma==='es'?'Inicia sesión primero':'Sign in first'); return; }
-  const text = prompt(idioma==='es'?`Escribe tu reseña para ${poiName}`:`Write your review for ${poiName}`);
-  if(!text) return;
-  const review = {user: user.displayName, text, time:Date.now()};
-  db.ref('reviews/'+poiId).push(review);
-  loadReviews(poiId);
-}
-function loadReviews(poiId){
-  const div=document.getElementById(`reviews-${poiId}`);
-  if(!div) return;
-  div.innerHTML='';
-  db.ref('reviews/'+poiId).once('value',snapshot=>{
-    snapshot.forEach(child=>{
-      const r = child.val();
-      const date = new Date(r.time).toLocaleString();
-      div.innerHTML+=`<div style="border-top:1px solid #ccc;padding:2px;"><b>${r.user}</b>: ${r.text} <br><small>${date}</small></div>`;
+  const res=await fetch(
+    "https://overpass-api.de/api/interpreter?data="+encodeURIComponent(q)
+  );
+  const data=await res.json();
+
+  data.elements.forEach(e=>{
+    if(!e.lat)return;
+    const name=e.tags.name||"Lugar";
+
+    const m=L.circleMarker([e.lat,e.lon],{
+      radius:7,
+      color:"#007bff",
+      fillOpacity:.9
+    }).addTo(poiLayer);
+
+    m.bindTooltip(name);
+
+    m.on("click",()=>{
+      if(user){
+        db.ref(`history/${user.uid}`).push({
+          name,
+          lat:e.lat,
+          lon:e.lon,
+          time:Date.now()
+        });
+      }
+      if("Notification"in window && Notification.permission==="granted"){
+        new Notification("Ikemap",{body:`Visitaste ${name}`});
+      }
     });
   });
 }
 
-// ---------- Eventos ----------
-document.getElementById('btn-search').addEventListener('click', searchPlace);
-document.getElementById('btn-route').addEventListener('click', route);
-document.getElementById('btn-speak').addEventListener('click', readDirections);
-document.getElementById('btn-locate').addEventListener('click', locate);
-document.getElementById('btn-dark').addEventListener('click', toggleDark);
-document.getElementById('btn-sat').addEventListener('click', toggleSatellite);
-document.getElementById('btn-poi').addEventListener('click', loadPOIs);
-document.getElementById('btn-login').addEventListener('click', loginGoogle);
-document.getElementById('btn-language').addEventListener('click', toggleLanguage);
-document.getElementById('btn-change-name').addEventListener('click', changeName);
-</script>
+btn-poi.onclick=loadPOIs;
 
+/* HISTORIAL */
+btn-history.onclick=()=>{
+  if(!user)return;
+  info.innerHTML="<b>Historial:</b><br>";
+  db.ref(`history/${user.uid}`).once("value",s=>{
+    s.forEach(e=>{
+      info.innerHTML+=`• ${e.val().name}<br>`;
+    });
+  });
+};
+
+/* RECOMENDACIONES */
+btn-reco.onclick=()=>{
+  info.innerHTML="<b>Recomendado para ti:</b><br>Restaurantes cercanos según tu historial";
+};
+
+/* NOTIFICATIONS */
+if("Notification"in window){
+  Notification.requestPermission();
+}
+</script>
 </body>
 </html>
