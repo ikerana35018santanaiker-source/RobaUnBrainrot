@@ -783,6 +783,30 @@ html, body {
   transform: scale(1.1);
 }
 
+.save-btn {
+  position: absolute;
+  top: 30px;
+  right: 90px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.save-btn.saved {
+  background: rgba(76, 175, 80, 0.3);
+}
+
 .place-address {
   font-size: 14px;
   opacity: 0.9;
@@ -1049,23 +1073,65 @@ html, body {
   letter-spacing: 0.5px;
 }
 
+/* LOCATION BUTTON */
+.locate-btn {
+  position: absolute;
+  bottom: 90px;
+  left: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: white;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  color: #333;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.locate-btn:hover {
+  background: #667eea;
+  border-color: #667eea;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.locate-btn:active {
+  transform: scale(0.95);
+}
+
 /* MOBILE RESPONSIVE */
 @media (max-width: 768px) {
   .search-panel {
-    width: calc(100% - 40px);
-    left: 20px;
-    top: 90px;
+    width: calc(100% - 20px);
+    left: 10px;
+    top: 80px;
+    padding: 15px;
+  }
+  
+  .brand {
+    padding: 8px 20px;
+    top: 10px;
   }
   
   .brand h1 {
-    font-size: 22px;
+    font-size: 20px;
+  }
+  
+  .brand small {
+    font-size: 10px;
   }
   
   .stats-widget {
     bottom: 10px;
     right: 10px;
-    gap: 12px;
-    padding: 10px 12px;
+    gap: 10px;
+    padding: 8px 12px;
   }
   
   .stat-value {
@@ -1076,13 +1142,70 @@ html, body {
     font-size: 9px;
   }
   
+  .locate-btn {
+    bottom: 70px;
+    left: 10px;
+  }
+  
   .place-header h2 {
-    font-size: 24px;
+    font-size: 22px;
+    padding-right: 50px;
   }
   
   .results-box,
   .place-detail-box {
+    width: calc(100% - 20px);
+    left: 10px;
+    max-height: 85vh;
+  }
+  
+  .route-panel {
+    width: calc(100% - 20px);
+    left: 10px;
+    bottom: 10px;
+    max-height: 60vh;
+  }
+  
+  .top-right {
+    top: 10px;
+    right: 10px;
+    gap: 6px;
+  }
+  
+  .top-right button {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  
+  .login-box {
     width: 95%;
+    padding: 30px 20px;
+  }
+  
+  .place-images {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    padding: 15px;
+  }
+  
+  .place-images img {
+    height: 120px;
+  }
+  
+  .review-item {
+    padding: 15px;
+  }
+  
+  .live-results {
+    max-height: 300px;
+  }
+  
+  .quick-actions {
+    gap: 6px;
+  }
+  
+  .quick-btn {
+    padding: 6px 12px;
+    font-size: 11px;
   }
 }
 
@@ -1180,6 +1303,7 @@ html, body {
     
     <div class="place-header">
       <button class="speak-btn" id="speak-btn">🔊</button>
+      <button class="save-btn" id="save-btn">💾</button>
       <h2 id="place-name">Nombre del Lugar</h2>
       <p class="place-address" id="place-address">Dirección</p>
       <button class="route-btn" id="route-btn">🚗 Cómo llegar</button>
@@ -1300,6 +1424,9 @@ html, body {
     <span class="stat-label">Rutas</span>
   </div>
 </div>
+
+<!-- LOCATION BUTTON -->
+<button class="locate-btn" id="btn-locate" title="Mi ubicación">📍</button>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -1462,63 +1589,99 @@ function handleUserLogin(user, isNewUser = false, customUsername = null) {
       photo: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(customUsername) + '&background=667eea&color=fff',
       email: user.email
     };
+    localStorage.setItem('userSIU', JSON.stringify(currentUser));
+    document.getElementById('login-modal').classList.remove('active');
+    showProfile(currentUser);
+    loadUserStats(user.uid);
   } else if (isNewUser) {
     // Check if user has username in database
-    db.ref(`users/${user.uid}`).once('value', snapshot => {
-      if (snapshot.exists()) {
-        const userData = snapshot.val();
+    db.ref(`users/${user.uid}`).once('value')
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          currentUser = {
+            uid: user.uid,
+            name: user.displayName || userData.username,
+            username: userData.username,
+            photo: user.photoURL || userData.photoURL,
+            email: user.email
+          };
+        } else {
+          currentUser = {
+            uid: user.uid,
+            name: user.displayName,
+            username: user.displayName,
+            photo: user.photoURL,
+            email: user.email
+          };
+          
+          // Save to database
+          db.ref(`users/${user.uid}`).set({
+            username: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL
+          }).catch(error => console.error('Error saving user:', error));
+        }
+        localStorage.setItem('userSIU', JSON.stringify(currentUser));
+        document.getElementById('login-modal').classList.remove('active');
+        showProfile(currentUser);
+        loadUserStats(user.uid);
+      })
+      .catch(error => {
+        console.error('Error loading user data:', error);
+        // Fallback if database fails
         currentUser = {
           uid: user.uid,
-          name: user.displayName || userData.username,
-          username: userData.username,
-          photo: user.photoURL || userData.photoURL,
-          email: user.email
-        };
-      } else {
-        currentUser = {
-          uid: user.uid,
-          name: user.displayName,
-          username: user.displayName,
-          photo: user.photoURL,
-          email: user.email
-        };
-        
-        // Save to database
-        db.ref(`users/${user.uid}`).set({
-          username: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL
-        });
-      }
-      showProfile(currentUser);
-    });
-  } else {
-    db.ref(`users/${user.uid}`).once('value', snapshot => {
-      if (snapshot.exists()) {
-        const userData = snapshot.val();
-        currentUser = {
-          uid: user.uid,
-          name: user.displayName || userData.username,
-          username: userData.username,
-          photo: user.photoURL || userData.photoURL,
-          email: user.email
-        };
-      } else {
-        currentUser = {
-          uid: user.uid,
-          name: user.displayName,
+          name: user.displayName || user.email.split('@')[0],
           username: user.displayName || user.email.split('@')[0],
           photo: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email) + '&background=667eea&color=fff',
           email: user.email
         };
-      }
-      showProfile(currentUser);
-    });
+        localStorage.setItem('userSIU', JSON.stringify(currentUser));
+        document.getElementById('login-modal').classList.remove('active');
+        showProfile(currentUser);
+      });
+  } else {
+    db.ref(`users/${user.uid}`).once('value')
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          currentUser = {
+            uid: user.uid,
+            name: user.displayName || userData.username,
+            username: userData.username,
+            photo: user.photoURL || userData.photoURL,
+            email: user.email
+          };
+        } else {
+          currentUser = {
+            uid: user.uid,
+            name: user.displayName,
+            username: user.displayName || user.email.split('@')[0],
+            photo: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email) + '&background=667eea&color=fff',
+            email: user.email
+          };
+        }
+        localStorage.setItem('userSIU', JSON.stringify(currentUser));
+        document.getElementById('login-modal').classList.remove('active');
+        showProfile(currentUser);
+        loadUserStats(user.uid);
+      })
+      .catch(error => {
+        console.error('Error loading user data:', error);
+        // Fallback if database fails
+        currentUser = {
+          uid: user.uid,
+          name: user.displayName || user.email.split('@')[0],
+          username: user.displayName || user.email.split('@')[0],
+          photo: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email) + '&background=667eea&color=fff',
+          email: user.email
+        };
+        localStorage.setItem('userSIU', JSON.stringify(currentUser));
+        document.getElementById('login-modal').classList.remove('active');
+        showProfile(currentUser);
+      });
   }
-  
-  localStorage.setItem('userSIU', JSON.stringify(currentUser));
-  document.getElementById('login-modal').classList.remove('active');
-  loadUserStats(user.uid);
 }
 
 function showProfile(user) {
@@ -1957,6 +2120,9 @@ async function showPlaceDetail(place) {
   // Load reviews
   loadReviews(currentPlaceId);
   
+  // Check if place is saved
+  checkIfPlaceSaved();
+  
   modal.classList.add('active');
   
   stats.visits++;
@@ -1995,6 +2161,145 @@ document.getElementById('speak-btn').onclick = () => {
     speechSynthesis.speak(utterance);
   } else {
     alert('Tu navegador no soporta síntesis de voz');
+  }
+};
+
+// SAVE PLACE FUNCTIONALITY
+document.getElementById('save-btn').onclick = () => {
+  if (!currentUser) {
+    alert(currentLang === 'es' ? 'Debes iniciar sesión para guardar lugares' : 'You must log in to save places');
+    return;
+  }
+  
+  if (!currentPlace) {
+    alert(currentLang === 'es' ? 'Error: No hay lugar seleccionado' : 'Error: No place selected');
+    return;
+  }
+  
+  const displayName = currentPlace.display_name || currentPlace.name || 'Lugar';
+  const placeData = {
+    placeId: currentPlaceId,
+    name: displayName.split(',')[0],
+    address: displayName,
+    lat: currentPlace.lat,
+    lon: currentPlace.lon,
+    time: Date.now()
+  };
+  
+  if (currentUser.isGuest) {
+    // For guests, save to localStorage
+    let savedPlaces = JSON.parse(localStorage.getItem('savedPlaces_' + currentUser.uid) || '[]');
+    
+    // Check if already saved
+    const alreadySaved = savedPlaces.some(p => p.placeId === currentPlaceId);
+    
+    if (alreadySaved) {
+      // Remove from saved
+      savedPlaces = savedPlaces.filter(p => p.placeId !== currentPlaceId);
+      localStorage.setItem('savedPlaces_' + currentUser.uid, JSON.stringify(savedPlaces));
+      document.getElementById('save-btn').classList.remove('saved');
+      document.getElementById('save-btn').textContent = '💾';
+      alert(currentLang === 'es' ? 'Lugar eliminado de guardados' : 'Place removed from saved');
+    } else {
+      // Add to saved
+      savedPlaces.push(placeData);
+      localStorage.setItem('savedPlaces_' + currentUser.uid, JSON.stringify(savedPlaces));
+      document.getElementById('save-btn').classList.add('saved');
+      document.getElementById('save-btn').textContent = '✅';
+      alert(currentLang === 'es' ? 'Lugar guardado exitosamente' : 'Place saved successfully');
+    }
+  } else {
+    // For logged in users, save to Firebase
+    const savedRef = db.ref(`saved/${currentUser.uid}/${currentPlaceId}`);
+    
+    savedRef.once('value', snapshot => {
+      if (snapshot.exists()) {
+        // Remove from saved
+        savedRef.remove()
+          .then(() => {
+            document.getElementById('save-btn').classList.remove('saved');
+            document.getElementById('save-btn').textContent = '💾';
+            alert(currentLang === 'es' ? 'Lugar eliminado de guardados' : 'Place removed from saved');
+          })
+          .catch(error => {
+            console.error('Error removing saved place:', error);
+            alert(currentLang === 'es' ? 'Error al eliminar' : 'Error removing');
+          });
+      } else {
+        // Add to saved
+        savedRef.set(placeData)
+          .then(() => {
+            document.getElementById('save-btn').classList.add('saved');
+            document.getElementById('save-btn').textContent = '✅';
+            alert(currentLang === 'es' ? 'Lugar guardado exitosamente' : 'Place saved successfully');
+          })
+          .catch(error => {
+            console.error('Error saving place:', error);
+            alert(currentLang === 'es' ? 'Error al guardar' : 'Error saving');
+          });
+      }
+    });
+  }
+};
+
+// Check if place is already saved when showing detail
+function checkIfPlaceSaved() {
+  if (!currentUser || !currentPlaceId) return;
+  
+  if (currentUser.isGuest) {
+    const savedPlaces = JSON.parse(localStorage.getItem('savedPlaces_' + currentUser.uid) || '[]');
+    const isSaved = savedPlaces.some(p => p.placeId === currentPlaceId);
+    
+    if (isSaved) {
+      document.getElementById('save-btn').classList.add('saved');
+      document.getElementById('save-btn').textContent = '✅';
+    } else {
+      document.getElementById('save-btn').classList.remove('saved');
+      document.getElementById('save-btn').textContent = '💾';
+    }
+  } else {
+    db.ref(`saved/${currentUser.uid}/${currentPlaceId}`).once('value', snapshot => {
+      if (snapshot.exists()) {
+        document.getElementById('save-btn').classList.add('saved');
+        document.getElementById('save-btn').textContent = '✅';
+      } else {
+        document.getElementById('save-btn').classList.remove('saved');
+        document.getElementById('save-btn').textContent = '💾';
+      }
+    });
+  }
+}
+
+// LOCATION BUTTON
+document.getElementById('btn-locate').onclick = () => {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        map.setView([lat, lon], 16);
+        
+        if (userMarker) {
+          map.removeLayer(userMarker);
+        }
+        
+        userMarker = L.circleMarker([lat, lon], {
+          radius: 10,
+          color: "#667eea",
+          fillColor: "#667eea",
+          fillOpacity: 0.8,
+          weight: 3
+        }).addTo(map);
+        
+        userMarker.bindPopup(currentLang === 'es' ? "📍 Tu ubicación" : "📍 Your location").openPopup();
+      },
+      error => {
+        alert(currentLang === 'es' ? 'No se pudo obtener tu ubicación' : 'Could not get your location');
+      }
+    );
+  } else {
+    alert(currentLang === 'es' ? 'Tu navegador no soporta geolocalización' : 'Your browser does not support geolocation');
   }
 };
 
@@ -2353,17 +2658,119 @@ document.getElementById('calculate-route-btn').onclick = async () => {
     
     if (route.legs && route.legs[0] && route.legs[0].steps) {
       route.legs[0].steps.forEach((step, i) => {
-        const instruction = step.maneuver?.instruction || 
-                          (step.maneuver?.type === 'depart' ? (currentLang === 'es' ? 'Partir hacia' : 'Depart to') + ' ' + (step.name || '') :
-                           step.maneuver?.type === 'arrive' ? (currentLang === 'es' ? 'Llegar a destino' : 'Arrive at destination') :
-                           (currentLang === 'es' ? 'Continuar' : 'Continue'));
-        routeSteps.innerHTML += `<p style="margin: 5px 0; font-size: 13px;"><strong>${i + 1}.</strong> ${instruction}</p>`;
+        // Build instruction from maneuver
+        let instruction = '';
+        
+        if (step.maneuver) {
+          const maneuver = step.maneuver;
+          const modifier = maneuver.modifier || '';
+          const type = maneuver.type || '';
+          const name = step.name || '';
+          
+          // Translate maneuvers
+          if (currentLang === 'es') {
+            switch(type) {
+              case 'depart':
+                instruction = 'Salir';
+                break;
+              case 'turn':
+                if (modifier.includes('left')) instruction = 'Girar a la izquierda';
+                else if (modifier.includes('right')) instruction = 'Girar a la derecha';
+                else instruction = 'Girar';
+                break;
+              case 'new name':
+                instruction = 'Continuar por';
+                break;
+              case 'continue':
+                instruction = 'Continuar';
+                break;
+              case 'merge':
+                instruction = 'Incorporarse';
+                break;
+              case 'on ramp':
+                instruction = 'Tomar rampa de entrada';
+                break;
+              case 'off ramp':
+                instruction = 'Tomar salida';
+                break;
+              case 'fork':
+                if (modifier.includes('left')) instruction = 'Mantener a la izquierda';
+                else if (modifier.includes('right')) instruction = 'Mantener a la derecha';
+                else instruction = 'En la bifurcación';
+                break;
+              case 'roundabout':
+              case 'rotary':
+                instruction = 'En la rotonda';
+                break;
+              case 'arrive':
+                instruction = 'Llegar a destino';
+                break;
+              default:
+                instruction = 'Continuar';
+            }
+          } else {
+            switch(type) {
+              case 'depart':
+                instruction = 'Depart';
+                break;
+              case 'turn':
+                if (modifier.includes('left')) instruction = 'Turn left';
+                else if (modifier.includes('right')) instruction = 'Turn right';
+                else instruction = 'Turn';
+                break;
+              case 'new name':
+                instruction = 'Continue on';
+                break;
+              case 'continue':
+                instruction = 'Continue';
+                break;
+              case 'merge':
+                instruction = 'Merge';
+                break;
+              case 'on ramp':
+                instruction = 'Take the ramp';
+                break;
+              case 'off ramp':
+                instruction = 'Take the exit';
+                break;
+              case 'fork':
+                if (modifier.includes('left')) instruction = 'Keep left';
+                else if (modifier.includes('right')) instruction = 'Keep right';
+                else instruction = 'At the fork';
+                break;
+              case 'roundabout':
+              case 'rotary':
+                instruction = 'At the roundabout';
+                break;
+              case 'arrive':
+                instruction = 'Arrive at destination';
+                break;
+              default:
+                instruction = 'Continue';
+            }
+          }
+          
+          // Add street name if available
+          if (name && name !== '-' && type !== 'arrive') {
+            instruction += ` ${currentLang === 'es' ? 'por' : 'on'} ${name}`;
+          }
+          
+          // Add distance if available
+          if (step.distance) {
+            const dist = step.distance > 1000 
+              ? `${(step.distance / 1000).toFixed(1)} km` 
+              : `${Math.round(step.distance)} m`;
+            instruction += ` (${dist})`;
+          }
+        }
+        
+        routeSteps.innerHTML += `<p style="margin: 5px 0; font-size: 13px; line-height: 1.5;"><strong>${i + 1}.</strong> ${instruction}</p>`;
       });
     }
     
     stats.routes++;
     updateStats();
-    if (currentUser) saveStats(currentUser.uid);
+    if (currentUser && !currentUser.isGuest) saveStats(currentUser.uid);
     
   } catch (error) {
     console.error('Error calculating route:', error);
