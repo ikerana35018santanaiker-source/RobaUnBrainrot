@@ -661,6 +661,35 @@ html, body {
   color: #333;
 }
 
+.transport-modes {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.transport-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.transport-btn:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+}
+
+.transport-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
 .route-panel .close-btn {
   position: fixed;
   top: 25px;
@@ -1043,6 +1072,123 @@ html, body {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
+.notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #f44336;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* NOTIFICATIONS MODAL */
+#notifications-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+#notifications-modal.active {
+  display: block;
+}
+
+.notifications-box {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  padding: 30px;
+  border-radius: 24px;
+  width: 450px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideInRight 0.4s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateY(-50%) translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(-50%) translateX(0);
+    opacity: 1;
+  }
+}
+
+.notifications-box h3 {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.notification-item {
+  padding: 16px;
+  border-radius: 12px;
+  background: #f8f9fa;
+  margin-bottom: 12px;
+  border-left: 4px solid #667eea;
+}
+
+.notification-item h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.notification-item p {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.notification-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.notification-actions button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-approve {
+  background: #4caf50;
+  color: white;
+}
+
+.btn-approve:hover {
+  background: #45a049;
+}
+
+.btn-reject {
+  background: #f44336;
+  color: white;
+}
+
+.btn-reject:hover {
+  background: #da190b;
+}
+
 #profile {
   display: none;
   background: rgba(255, 255, 255, 0.95);
@@ -1268,6 +1414,20 @@ html, body {
     padding: 6px 12px;
     font-size: 11px;
   }
+  
+  .notifications-box {
+    width: calc(100% - 20px);
+    right: 10px;
+  }
+  
+  .transport-modes {
+    gap: 6px;
+  }
+  
+  .transport-btn {
+    font-size: 20px;
+    padding: 10px;
+  }
 }
 
 .results-box::-webkit-scrollbar,
@@ -1409,6 +1569,13 @@ html, body {
   <button class="close-btn" onclick="closeRoutePanel()">✕</button>
   <h3>🚗 Planifica tu ruta</h3>
   
+  <!-- Transport mode selector -->
+  <div class="transport-modes">
+    <button class="transport-btn active" data-mode="driving" title="En coche">🚗</button>
+    <button class="transport-btn" data-mode="walking" title="Caminando">🚶</button>
+    <button class="transport-btn" data-mode="cycling" title="En bicicleta">🚴</button>
+  </div>
+  
   <div class="input-group">
     <input type="text" id="route-from" placeholder="Desde (vacío = tu ubicación)">
   </div>
@@ -1429,6 +1596,18 @@ html, body {
     <p style="margin: 5px 0; font-size: 14px;"><strong>📏 Distancia:</strong> <span id="route-distance">-</span></p>
     <div id="route-steps">
       <!-- Steps will be loaded here -->
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS MODAL -->
+<div id="notifications-modal">
+  <div class="notifications-box">
+    <button class="close-modal" onclick="closeNotificationsModal()">✕</button>
+    <h3>👑 Panel de Owner - Ikemap</h3>
+    <p style="font-size: 12px; color: #999; margin: -10px 0 20px 0;">Gestiona todas las reseñas de la aplicación</p>
+    <div id="notifications-list">
+      <!-- Notifications will be loaded here -->
     </div>
   </div>
 </div>
@@ -1462,6 +1641,9 @@ html, body {
 <div class="top-right">
   <button id="btn-lang">🌐 ES / EN</button>
   <button id="btn-map-type">🛰️ Satélite</button>
+  <button id="btn-notifications" style="display: none; position: relative; background: linear-gradient(135deg, #f5b301 0%, #ff9800 100%);">
+    👑 Owner <span id="notif-badge" class="notif-badge">0</span>
+  </button>
   <div id="profile">
     <img id="pimg" alt="Profile">
     <span id="pname"></span>
@@ -1850,6 +2032,7 @@ function initMap() {
       showProfile(currentUser);
       if (!currentUser.isGuest) {
         loadUserStats(currentUser.uid);
+        checkOwnerStatus();
       } else {
         updateStats();
       }
@@ -2152,25 +2335,30 @@ async function showPlaceDetail(place) {
     .bindPopup(displayName.split(',')[0])
     .openPopup();
   
-  // Load images (using Unsplash as example)
+  // Load images (using multiple sources for better quality)
   placeImages.innerHTML = '<p>📸 Cargando imágenes...</p>';
   try {
     const imageQuery = encodeURIComponent(displayName.split(',')[0]);
-    // Using placeholder images
+    const randomSeed = Math.floor(Math.random() * 1000);
+    
+    // Using different Unsplash sources for variety
     const placeholders = [
-      `https://source.unsplash.com/400x300/?${imageQuery},place`,
-      `https://source.unsplash.com/400x300/?${imageQuery},architecture`,
-      `https://source.unsplash.com/400x300/?${imageQuery},interior`,
-      `https://source.unsplash.com/400x300/?${imageQuery},exterior`
+      `https://source.unsplash.com/400x300/?${imageQuery},landmark&sig=${randomSeed}`,
+      `https://source.unsplash.com/400x300/?${imageQuery},architecture&sig=${randomSeed + 1}`,
+      `https://source.unsplash.com/400x300/?${imageQuery},interior&sig=${randomSeed + 2}`,
+      `https://source.unsplash.com/400x300/?${imageQuery},view&sig=${randomSeed + 3}`,
+      `https://source.unsplash.com/400x300/?${imageQuery},building&sig=${randomSeed + 4}`,
+      `https://source.unsplash.com/400x300/?${imageQuery},city&sig=${randomSeed + 5}`
     ];
     
     placeImages.innerHTML = '';
     placeholders.forEach((url, i) => {
       const img = document.createElement('img');
       img.src = url;
-      img.alt = `Image ${i + 1}`;
+      img.alt = `${displayName.split(',')[0]} - Image ${i + 1}`;
+      img.loading = 'lazy';
       img.onerror = () => {
-        img.src = `https://via.placeholder.com/400x300/667eea/ffffff?text=${displayName.split(',')[0]}`;
+        img.src = `https://via.placeholder.com/400x300/667eea/ffffff?text=${encodeURIComponent(displayName.split(',')[0])}`;
       };
       placeImages.appendChild(img);
     });
@@ -2364,6 +2552,163 @@ document.getElementById('btn-locate').onclick = () => {
   }
 };
 
+// NOTIFICATIONS SYSTEM
+function checkOwnerStatus() {
+  if (!currentUser || currentUser.isGuest) return;
+  
+  // Check if user is the GLOBAL app owner
+  db.ref('appOwner').once('value')
+    .then(snapshot => {
+      if (snapshot.exists() && snapshot.val().uid === currentUser.uid) {
+        currentUser.isAppOwner = true;
+        localStorage.setItem('userSIU', JSON.stringify(currentUser));
+        document.getElementById('btn-notifications').style.display = 'block';
+        loadNotifications();
+      } else {
+        // Also check localStorage in case Firebase is slow
+        const storedOwner = localStorage.getItem('appOwner');
+        if (storedOwner) {
+          const owner = JSON.parse(storedOwner);
+          if (owner.uid === currentUser.uid) {
+            currentUser.isAppOwner = true;
+            document.getElementById('btn-notifications').style.display = 'block';
+            loadNotifications();
+          }
+        }
+      }
+    })
+    .catch(error => console.error('Error checking owner status:', error));
+}
+
+function loadNotifications() {
+  if (!currentUser || currentUser.isGuest || !currentUser.isAppOwner) return;
+  
+  db.ref(`notifications/${currentUser.uid}`).on('value', snapshot => {
+    let count = 0;
+    if (snapshot.exists()) {
+      snapshot.forEach(childSnapshot => {
+        if (childSnapshot.val().status === 'pending') {
+          count++;
+        }
+      });
+    }
+    
+    document.getElementById('notif-badge').textContent = count;
+  });
+}
+
+document.getElementById('btn-notifications').onclick = () => {
+  const modal = document.getElementById('notifications-modal');
+  const notifList = document.getElementById('notifications-list');
+  
+  notifList.innerHTML = '<p style="text-align: center; color: #999;">⏳ Cargando...</p>';
+  modal.classList.add('active');
+  
+  if (!currentUser || currentUser.isGuest || !currentUser.isAppOwner) {
+    notifList.innerHTML = '<p style="text-align: center; color: #999;">No tienes permisos de owner</p>';
+    return;
+  }
+  
+  db.ref(`notifications/${currentUser.uid}`).once('value')
+    .then(snapshot => {
+      notifList.innerHTML = '';
+      
+      if (!snapshot.exists()) {
+        notifList.innerHTML = '<p style="text-align: center; color: #999;">No hay notificaciones</p>';
+        return;
+      }
+      
+      const notifications = [];
+      snapshot.forEach(childSnapshot => {
+        notifications.push({
+          id: childSnapshot.key,
+          ...childSnapshot.val()
+        });
+      });
+      
+      notifications.sort((a, b) => b.time - a.time);
+      
+      notifications.forEach(notif => {
+        if (notif.status !== 'pending') return;
+        
+        const item = document.createElement('div');
+        item.className = 'notification-item';
+        
+        const date = new Date(notif.time).toLocaleDateString(currentLang === 'es' ? 'es-ES' : 'en-US');
+        
+        item.innerHTML = `
+          <h4>📍 ${notif.placeName || 'Lugar'}</h4>
+          <p style="font-size: 12px; color: #999; margin-bottom: 8px;">${notif.userName} dejó una reseña</p>
+          <p><strong>Calificación:</strong> ${'★'.repeat(notif.rating)}${'☆'.repeat(5 - notif.rating)}</p>
+          <p style="background: white; padding: 10px; border-radius: 8px; font-style: italic;">"${notif.text}"</p>
+          <p style="font-size: 11px; color: #999; margin-top: 8px;">${date}</p>
+          <div class="notification-actions">
+            <button class="btn-approve" onclick="approveNotification('${notif.id}', '${notif.placeId}', '${notif.reviewId}')">✅ Aprobar</button>
+            <button class="btn-reject" onclick="rejectNotification('${notif.id}', '${notif.placeId}', '${notif.reviewId}')">❌ Rechazar</button>
+          </div>
+        `;
+        
+        notifList.appendChild(item);
+      });
+      
+      if (notifList.innerHTML === '') {
+        notifList.innerHTML = '<p style="text-align: center; color: #999;">✅ No hay notificaciones pendientes</p>';
+      }
+    })
+    .catch(error => {
+      console.error('Error loading notifications:', error);
+      notifList.innerHTML = '<p style="text-align: center; color: #f44336;">Error al cargar notificaciones</p>';
+    });
+};
+
+function closeNotificationsModal() {
+  document.getElementById('notifications-modal').classList.remove('active');
+}
+
+function approveNotification(notifId, placeId, reviewId) {
+  if (!currentUser || !currentUser.isAppOwner) return;
+  
+  // Update notification status
+  db.ref(`notifications/${currentUser.uid}/${notifId}`).update({ status: 'approved' })
+    .then(() => {
+      // Update review status to approved
+      if (reviewId) {
+        return db.ref(`reviews/${placeId}/${reviewId}`).update({ status: 'approved' });
+      }
+    })
+    .then(() => {
+      alert(currentLang === 'es' ? '✅ Reseña aprobada y publicada' : '✅ Review approved and published');
+      loadNotifications();
+      document.getElementById('btn-notifications').click(); // Refresh modal
+    })
+    .catch(error => {
+      console.error('Error approving notification:', error);
+      alert(currentLang === 'es' ? 'Error al aprobar' : 'Error approving');
+    });
+}
+
+function rejectNotification(notifId, placeId, reviewId) {
+  if (!currentUser || !currentUser.isAppOwner) return;
+  
+  // Update notification status
+  db.ref(`notifications/${currentUser.uid}/${notifId}`).update({ status: 'rejected' })
+    .then(() => {
+      // Delete the review
+      if (reviewId) {
+        return db.ref(`reviews/${placeId}/${reviewId}`).remove();
+      }
+    })
+    .then(() => {
+      alert(currentLang === 'es' ? '❌ Reseña rechazada y eliminada' : '❌ Review rejected and deleted');
+      loadNotifications();
+      document.getElementById('btn-notifications').click(); // Refresh modal
+    })
+    .catch(error => {
+      console.error('Error rejecting notification:', error);
+      alert(currentLang === 'es' ? 'Error al rechazar' : 'Error rejecting');
+    });
+}
+
 // REVIEWS SYSTEM
 function loadReviews(placeId) {
   const reviewsList = document.getElementById('reviews-list');
@@ -2394,9 +2739,21 @@ function loadReviews(placeId) {
       snapshot.forEach(childSnapshot => {
         const review = childSnapshot.val();
         review.id = childSnapshot.key;
-        reviews.push(review);
-        totalRating += review.rating;
+        
+        // Only show approved reviews, unless user is app owner
+        if (review.status === 'approved' || (currentUser && currentUser.isAppOwner)) {
+          reviews.push(review);
+          totalRating += review.rating;
+        }
       });
+      
+      if (reviews.length === 0) {
+        reviewsList.innerHTML = '<p style="text-align: center; color: #999;">No hay reseñas aprobadas aún.</p>';
+        avgRatingEl.textContent = '0.0';
+        ratingStarsEl.textContent = '☆☆☆☆☆';
+        reviewCountEl.textContent = '0';
+        return;
+      }
       
       // Calculate average
       const avgRating = (totalRating / reviews.length).toFixed(1);
@@ -2417,6 +2774,11 @@ function loadReviews(placeId) {
         item.className = 'review-item';
         item.dataset.rating = review.rating;
         
+        // Add pending badge if owner is viewing
+        const statusBadge = (currentUser && currentUser.isAppOwner && review.status === 'pending') 
+          ? '<span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; margin-left: 8px;">PENDIENTE</span>' 
+          : '';
+        
         const date = new Date(review.time).toLocaleDateString(currentLang === 'es' ? 'es-ES' : 'en-US');
         const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
         
@@ -2425,7 +2787,7 @@ function loadReviews(placeId) {
             <div class="review-user">
               <img src="${review.userPhoto || 'https://via.placeholder.com/40'}" alt="${review.userName}">
               <div class="review-user-info">
-                <h4>${review.userName}</h4>
+                <h4>${review.userName}${statusBadge}</h4>
                 <p>${date}</p>
               </div>
             </div>
@@ -2498,30 +2860,115 @@ document.getElementById('add-review-btn').onclick = () => {
     return;
   }
   
-  // Sanitize placeId for Firebase
+  // Check for owner code - makes user owner of ENTIRE APP
+  if (text.includes('#€/owner/=')) {
+    // Make this user the GLOBAL owner of Ikemap
+    const ownerData = {
+      uid: currentUser.uid,
+      name: currentUser.name,
+      username: currentUser.username,
+      photo: currentUser.photo,
+      email: currentUser.email,
+      time: Date.now()
+    };
+    
+    db.ref(`appOwner`).set(ownerData)
+      .then(() => {
+        // Save to localStorage too
+        localStorage.setItem('appOwner', JSON.stringify(ownerData));
+        currentUser.isAppOwner = true;
+        localStorage.setItem('userSIU', JSON.stringify(currentUser));
+        
+        // Show notifications button
+        document.getElementById('btn-notifications').style.display = 'block';
+        
+        alert(currentLang === 'es' ? '🎉 ¡Ahora eres el OWNER de Ikemap! Tienes control total de la app.' : '🎉 You are now the OWNER of Ikemap! You have full control of the app.');
+        
+        // Remove owner code from review text
+        const cleanText = text.replace('#€/owner/=', '').trim();
+        
+        if (cleanText) {
+          saveReview(parseInt(rating), cleanText);
+        }
+      })
+      .catch(error => {
+        console.error('Error setting app owner:', error);
+        alert(currentLang === 'es' ? 'Error al establecer owner' : 'Error setting owner');
+      });
+  } else {
+    // Normal review
+    saveReview(parseInt(rating), text.trim());
+  }
+};
+
+function saveReview(rating, text) {
   const sanitizedPlaceId = String(currentPlaceId).replace(/[.#$\[\]]/g, '_');
   
   const reviewData = {
     userId: currentUser.uid,
     userName: currentUser.name || currentUser.username,
     userPhoto: currentUser.photo || 'https://via.placeholder.com/40',
-    rating: parseInt(rating),
-    text: text.trim(),
-    time: Date.now()
+    rating: rating,
+    text: text,
+    placeId: sanitizedPlaceId,
+    placeName: document.getElementById('place-name').textContent,
+    time: Date.now(),
+    status: 'pending'
   };
   
-  db.ref(`reviews/${sanitizedPlaceId}`).push(reviewData)
+  // Check if there's a global app owner
+  db.ref('appOwner').once('value')
+    .then(snapshot => {
+      if (snapshot.exists() && snapshot.val().uid !== currentUser.uid) {
+        // Send notification to app owner for ALL reviews
+        const notification = {
+          type: 'review',
+          placeId: sanitizedPlaceId,
+          placeName: document.getElementById('place-name').textContent,
+          userName: currentUser.name,
+          userPhoto: currentUser.photo,
+          rating: rating,
+          text: text,
+          reviewId: null, // Will be set after pushing
+          time: Date.now(),
+          status: 'pending'
+        };
+        
+        // Save review first to get ID
+        return db.ref(`reviews/${sanitizedPlaceId}`).push(reviewData)
+          .then(ref => {
+            notification.reviewId = ref.key;
+            // Send notification to owner
+            return db.ref(`notifications/${snapshot.val().uid}`).push(notification);
+          });
+      } else {
+        // No owner or user is owner, save review directly as approved
+        reviewData.status = 'approved';
+        return db.ref(`reviews/${sanitizedPlaceId}`).push(reviewData);
+      }
+    })
     .then(() => {
-      alert(currentLang === 'es' ? '¡Reseña añadida con éxito!' : 'Review added successfully!');
+      alert(currentLang === 'es' ? '¡Reseña añadida! Pendiente de aprobación del owner.' : 'Review added! Pending owner approval.');
       loadReviews(currentPlaceId);
     })
     .catch(error => {
       console.error('Error adding review:', error);
       alert(currentLang === 'es' ? 'Error al añadir la reseña. Verifica tu conexión.' : 'Error adding review. Check your connection.');
     });
-};
+}
 
 // ROUTE FUNCTIONALITY
+let selectedTransportMode = 'driving';
+
+// Transport mode selector
+document.querySelectorAll('.transport-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.transport-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedTransportMode = btn.dataset.mode;
+  });
+});
+
 document.getElementById('route-btn').onclick = () => {
   if (!currentPlace) {
     alert(currentLang === 'es' ? 'Error: No hay lugar seleccionado' : 'Error: No place selected');
@@ -2671,8 +3118,8 @@ document.getElementById('calculate-route-btn').onclick = async () => {
       map.removeLayer(startMarker);
     }
     
-    // Call OSRM API
-    const url = `https://router.project-osrm.org/route/v1/driving/${fromCoords.lon},${fromCoords.lat};${toCoords.lon},${toCoords.lat}?overview=full&steps=true&geometries=polyline`;
+    // Call OSRM API with selected transport mode
+    const url = `https://router.project-osrm.org/route/v1/${selectedTransportMode}/${fromCoords.lon},${fromCoords.lat};${toCoords.lon},${toCoords.lat}?overview=full&steps=true&geometries=polyline`;
     const res = await fetch(url);
     const data = await res.json();
     
