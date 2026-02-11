@@ -638,14 +638,17 @@ html, body {
   left: 20px;
   bottom: 20px;
   width: 380px;
+  max-height: 70vh;
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
   padding: 25px;
+  padding-top: 50px;
   border-radius: 24px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   z-index: 10000;
   display: none;
   animation: slideInUp 0.4s ease;
+  overflow-y: auto;
 }
 
 .route-panel.active {
@@ -656,6 +659,57 @@ html, body {
   margin: 0 0 20px 0;
   font-size: 22px;
   color: #333;
+}
+
+.route-panel .close-btn {
+  position: fixed;
+  top: 25px;
+  left: 25px;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+}
+
+.route-panel .close-btn:hover {
+  background: #e0e0e0;
+  transform: rotate(90deg);
+}
+
+#route-info {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+#route-steps {
+  margin-top: 15px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+#route-steps::-webkit-scrollbar {
+  width: 6px;
+}
+
+#route-steps::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+#route-steps::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
 }
 
 /* ROUTE MODAL */
@@ -1163,7 +1217,14 @@ html, body {
     width: calc(100% - 20px);
     left: 10px;
     bottom: 10px;
-    max-height: 60vh;
+    max-height: 70vh;
+    padding: 20px;
+    padding-top: 50px;
+  }
+  
+  .route-panel .close-btn {
+    left: 15px;
+    top: 15px;
   }
   
   .top-right {
@@ -1362,11 +1423,11 @@ html, body {
   
   <button class="btn btn-primary" id="calculate-route-btn">🗺️ Calcular Ruta</button>
   
-  <div id="route-info" style="margin-top: 20px; padding: 16px; background: #f8f9fa; border-radius: 12px; display: none;">
+  <div id="route-info" style="display: none;">
     <h4 style="margin: 0 0 10px 0; color: #667eea;">Información de la ruta</h4>
     <p style="margin: 5px 0; font-size: 14px;"><strong>⏱️ Duración:</strong> <span id="route-duration">-</span></p>
     <p style="margin: 5px 0; font-size: 14px;"><strong>📏 Distancia:</strong> <span id="route-distance">-</span></p>
-    <div id="route-steps" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
+    <div id="route-steps">
       <!-- Steps will be loaded here -->
     </div>
   </div>
