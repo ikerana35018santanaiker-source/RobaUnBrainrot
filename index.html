@@ -641,8 +641,8 @@ html, body {
   max-height: 70vh;
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
-  padding: 25px;
-  padding-top: 50px;
+  padding: 20px;
+  padding-top: 60px;
   border-radius: 24px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   z-index: 10000;
@@ -691,9 +691,9 @@ html, body {
 }
 
 .route-panel .close-btn {
-  position: fixed;
-  top: 25px;
-  left: 25px;
+  position: absolute;
+  top: 15px;
+  right: 15px;
   width: 35px;
   height: 35px;
   border-radius: 50%;
@@ -1217,14 +1217,14 @@ html, body {
 /* NAVIGATION BUBBLE */
 .nav-bubble {
   position: fixed;
-  top: 100px;
+  top: 120px;
   left: 50%;
   transform: translateX(-50%) scale(0);
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 25px 35px;
+  padding: 30px 40px;
   border-radius: 30px;
-  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.5);
-  z-index: 10001;
+  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.6);
+  z-index: 10002;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1240,27 +1240,28 @@ html, body {
 }
 
 .nav-bubble img {
-  width: 80px;
-  height: 80px;
-  filter: brightness(0) invert(1);
+  width: 90px;
+  height: 90px;
+  filter: brightness(0) invert(1) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
 }
 
 .nav-bubble #nav-distance {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   color: white;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
 }
 
 /* ROUTE PANEL CENTERED MODE */
 .route-panel.navigation-mode {
-  left: 50%;
-  transform: translateX(-50%);
+  left: 20px;
+  transform: none;
   bottom: auto;
   top: 50%;
-  margin-top: -25vh;
-  width: 450px;
-  max-height: 80vh;
+  margin-top: -30vh;
+  width: 400px;
+  max-height: 60vh;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
   border: 2px solid rgba(102, 126, 234, 0.3);
 }
@@ -1511,13 +1512,19 @@ html, body {
     left: 10px;
     bottom: 10px;
     max-height: 70vh;
-    padding: 20px;
-    padding-top: 50px;
+    padding: 15px;
+    padding-top: 55px;
+  }
+  
+  .route-panel.navigation-mode {
+    left: 10px;
+    margin-top: -35vh;
+    width: calc(100% - 20px);
   }
   
   .route-panel .close-btn {
-    left: 15px;
-    top: 15px;
+    right: 10px;
+    top: 10px;
   }
   
   .top-right {
@@ -3221,10 +3228,6 @@ document.getElementById('route-btn').onclick = () => {
   }
   
   const routePanel = document.getElementById('route-panel');
-  const searchPanel = document.querySelector('.search-panel');
-  const statsWidget = document.querySelector('.stats-widget');
-  const topRight = document.querySelector('.top-right');
-  
   const routeTo = document.getElementById('route-to');
   const displayName = currentPlace.display_name || currentPlace.name || 'Lugar';
   
@@ -3232,12 +3235,18 @@ document.getElementById('route-btn').onclick = () => {
   document.getElementById('route-from').value = '';
   document.getElementById('route-info').style.display = 'none';
   
-  // Hide other UI elements
-  searchPanel.style.display = 'none';
-  statsWidget.style.display = 'none';
-  topRight.style.display = 'none';
+  // Close place detail modal
+  closePlaceDetail();
   
+  // Hide other UI elements and enter navigation mode
+  document.querySelector('.search-panel').style.display = 'none';
+  document.querySelector('.stats-widget').style.display = 'none';
+  document.querySelector('.top-right').style.display = 'none';
+  document.querySelector('.brand').style.display = 'none';
+  
+  // Activate route panel with navigation mode
   routePanel.classList.add('active');
+  routePanel.classList.add('navigation-mode');
 };
 
 function closeRoutePanel() {
@@ -3518,7 +3527,15 @@ document.getElementById('calculate-route-btn').onclick = async () => {
           const stepEl = document.createElement('p');
           stepEl.style.cssText = 'margin: 5px 0; font-size: 13px; line-height: 1.5; cursor: pointer; padding: 8px; border-radius: 8px; transition: all 0.3s ease;';
           stepEl.innerHTML = `<strong>${i + 1}.</strong> ${instruction}`;
-          stepEl.onclick = () => showNavigationBubble(maneuverType, distanceText);
+          
+          // Store maneuver data for click handler
+          const stepManeuverType = maneuverType;
+          const stepDistance = distanceText;
+          
+          stepEl.onclick = function() {
+            showNavigationBubble(stepManeuverType, stepDistance);
+          };
+          
           stepEl.onmouseover = () => stepEl.style.background = '#f0f0f0';
           stepEl.onmouseout = () => stepEl.style.background = 'transparent';
           
@@ -3527,8 +3544,7 @@ document.getElementById('calculate-route-btn').onclick = async () => {
       });
     }
     
-    // ENTER NAVIGATION MODE
-    enterNavigationMode();
+    // NO need to enter navigation mode here, already done
     
     stats.routes++;
     updateStats();
@@ -3542,13 +3558,7 @@ document.getElementById('calculate-route-btn').onclick = async () => {
 };
 
 function enterNavigationMode() {
-  // Hide all UI elements
-  document.querySelector('.search-panel').style.display = 'none';
-  document.querySelector('.stats-widget').style.display = 'none';
-  document.querySelector('.top-right').style.display = 'none';
-  document.querySelector('.brand').style.display = 'none';
-  
-  // Center the route panel
+  // Already hidden when opening route panel
   const routePanel = document.getElementById('route-panel');
   routePanel.classList.add('navigation-mode');
 }
@@ -3573,18 +3583,20 @@ function showNavigationBubble(maneuverType, distance) {
   const icon = document.getElementById('nav-icon');
   const distanceEl = document.getElementById('nav-distance');
   
+  console.log('Showing bubble:', maneuverType, distance);
+  
   // Set appropriate icon based on maneuver
   const iconUrl = getManeuverIcon(maneuverType);
   icon.src = iconUrl;
-  distanceEl.textContent = distance;
+  distanceEl.textContent = distance || '0 m';
   
   // Show bubble
   bubble.classList.add('active');
   
-  // Hide after 3 seconds
+  // Hide after 4 seconds
   setTimeout(() => {
     bubble.classList.remove('active');
-  }, 3000);
+  }, 4000);
 }
 
 function getManeuverIcon(maneuverType) {
