@@ -3380,6 +3380,9 @@ document.getElementById('calculate-route-btn').onclick = async () => {
     const route = data.routes[0];
     const coords = polyline.decode(route.geometry).map(c => [c[0], c[1]]);
     
+    // Save original coordinates globally
+    window.originalRouteCoords = coords;
+    
     routeLine = L.polyline(coords, {
       color: "#667eea",
       weight: 5,
@@ -3413,8 +3416,10 @@ document.getElementById('calculate-route-btn').onclick = async () => {
       '</h5>';
     
     if (route.legs && route.legs[0] && route.legs[0].steps) {
-      route.legs[0].steps.forEach((step, i) => {
-        // Build instruction from maneuver
+      const steps = route.legs[0].steps;
+      
+      // Store steps globally for navigation
+      window.navigationSteps = steps.map((step, i) => {
         let instruction = '';
         let maneuverType = '';
         
@@ -3512,39 +3517,56 @@ document.getElementById('calculate-route-btn').onclick = async () => {
           if (name && name !== '-' && type !== 'arrive') {
             instruction += ` ${currentLang === 'es' ? 'por' : 'on'} ${name}`;
           }
-          
-          // Add distance if available
-          let distanceText = '';
-          if (step.distance) {
-            const dist = step.distance > 1000 
-              ? `${(step.distance / 1000).toFixed(1)} km` 
-              : `${Math.round(step.distance)} m`;
-            distanceText = dist;
-            instruction += ` (${dist})`;
-          }
-          
-          // Create step element with click handler for navigation bubble
-          const stepEl = document.createElement('p');
-          stepEl.style.cssText = 'margin: 5px 0; font-size: 13px; line-height: 1.5; cursor: pointer; padding: 8px; border-radius: 8px; transition: all 0.3s ease;';
-          stepEl.innerHTML = `<strong>${i + 1}.</strong> ${instruction}`;
-          
-          // Store maneuver data for click handler
-          const stepManeuverType = maneuverType;
-          const stepDistance = distanceText;
-          
-          stepEl.onclick = function() {
-            showNavigationBubble(stepManeuverType, stepDistance);
-          };
-          
-          stepEl.onmouseover = () => stepEl.style.background = '#f0f0f0';
-          stepEl.onmouseout = () => stepEl.style.background = 'transparent';
-          
-          routeSteps.appendChild(stepEl);
         }
+        
+        const dist = step.distance > 1000 
+          ? `${(step.distance / 1000).toFixed(1)} km` 
+          : `${Math.round(step.distance)} m`;
+        
+        return {
+          instruction: instruction,
+          maneuverType: maneuverType,
+          distance: dist,
+          location: step.maneuver.location
+        };
       });
+      
+      steps.forEach((step, i) => {
+        const stepData = window.navigationSteps[i];
+        const fullInstruction = `${stepData.instruction} (${stepData.distance})`;
+        
+        // Create step element with click handler for navigation bubble
+        const stepEl = document.createElement('p');
+        stepEl.style.cssText = 'margin: 5px 0; font-size: 13px; line-height: 1.5; cursor: pointer; padding: 8px; border-radius: 8px; transition: all 0.3s ease; background: white;';
+        stepEl.innerHTML = `<strong>${i + 1}.</strong> ${fullInstruction}`;
+        stepEl.dataset.stepIndex = i;
+        
+        stepEl.addEventListener('click', function() {
+          const idx = parseInt(this.dataset.stepIndex);
+          const data = window.navigationSteps[idx];
+          console.log('Click on step', idx, data);
+          showNavigationBubble(data.maneuverType, data.distance);
+        });
+        
+        stepEl.addEventListener('mouseover', function() {
+          this.style.background = '#f0f0f0';
+        });
+        
+        stepEl.addEventListener('mouseout', function() {
+          this.style.background = 'white';
+        });
+        
+        routeSteps.appendChild(stepEl);
+      });
+      
+      // Add Start Navigation button
+      const startBtn = document.createElement('button');
+      startBtn.className = 'btn btn-primary';
+      startBtn.style.marginTop = '20px';
+      startBtn.innerHTML = '🧭 ' + (currentLang === 'es' ? 'Iniciar Navegación' : 'Start Navigation');
+      startBtn.onclick = startLiveNavigation;
+      routeSteps.appendChild(startBtn);
     }
-    
-    // NO need to enter navigation mode here, already done
     
     stats.routes++;
     updateStats();
@@ -3593,10 +3615,13 @@ function showNavigationBubble(maneuverType, distance) {
   // Show bubble
   bubble.classList.add('active');
   
-  // Hide after 4 seconds
-  setTimeout(() => {
-    bubble.classList.remove('active');
-  }, 4000);
+  // Only hide automatically if not in live navigation mode
+  if (navigationWatchId === null) {
+    setTimeout(() => {
+      bubble.classList.remove('active');
+    }, 4000);
+  }
+  // During navigation, bubble stays visible and updates continuously
 }
 
 function getManeuverIcon(maneuverType) {
@@ -3616,6 +3641,264 @@ function getManeuverIcon(maneuverType) {
   if (maneuverType.includes('roundabout') || maneuverType.includes('rotary')) return icons['roundabout'];
   
   return icons['continue'];
+}
+
+// LIVE NAVIGATION
+let navigationWatchId = null;
+let currentStepIndex = 0;
+let completedRouteCoords = [];
+
+function startLiveNavigation() {
+  if (!window.navigationSteps || window.navigationSteps.length === 0) {
+    alert(currentLang === 'es' ? 'Error: No hay ruta calculada' : 'Error: No route calculated');
+    return;
+  }
+  
+  if (!("geolocation" in navigator)) {
+    alert(currentLang === 'es' ? 'Tu navegador no soporta geolocalización' : 'Your browser does not support geolocation');
+    return;
+  }
+  
+  currentStepIndex = 0;
+  completedRouteCoords = [];
+  
+  // Show first instruction immediately
+  const firstStep = window.navigationSteps[0];
+  showNavigationBubble(firstStep.maneuverType, firstStep.distance);
+  
+  // Start watching position
+  navigationWatchId = navigator.geolocation.watchPosition(
+    updateNavigationPosition,
+    (error) => {
+      console.error('Geolocation error:', error);
+      alert(currentLang === 'es' ? 'Error obteniendo ubicación' : 'Error getting location');
+      stopLiveNavigation();
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0
+    }
+  );
+  
+  // Change button to stop
+  const startBtn = document.querySelector('#route-steps button');
+  if (startBtn) {
+    startBtn.innerHTML = '⏹️ ' + (currentLang === 'es' ? 'Detener Navegación' : 'Stop Navigation');
+    startBtn.style.background = 'linear-gradient(135deg, #f44336 0%, #e91e63 100%)';
+    startBtn.onclick = stopLiveNavigation;
+  }
+  
+  console.log('Live navigation started');
+}
+
+function updateNavigationPosition(position) {
+  const userLat = position.coords.latitude;
+  const userLon = position.coords.longitude;
+  
+  // Update user marker
+  if (userMarker) {
+    map.removeLayer(userMarker);
+  }
+  
+  userMarker = L.circleMarker([userLat, userLon], {
+    radius: 12,
+    color: "#667eea",
+    fillColor: "#667eea",
+    fillOpacity: 1,
+    weight: 4
+  }).addTo(map);
+  
+  // Center map on user
+  map.setView([userLat, userLon], map.getZoom(), { animate: true });
+  
+  // Add current position to completed coords
+  completedRouteCoords.push([userLat, userLon]);
+  
+  // Update route colors
+  updateRouteProgress();
+  
+  // Check which step we're at
+  if (currentStepIndex < window.navigationSteps.length) {
+    const currentStep = window.navigationSteps[currentStepIndex];
+    const stepLocation = currentStep.location;
+    
+    // Calculate distance to next maneuver point
+    const distance = calculateDistance(userLat, userLon, stepLocation[1], stepLocation[0]);
+    
+    // Update distance in bubble if showing
+    const distanceText = distance > 1000 
+      ? `${(distance / 1000).toFixed(1)} km` 
+      : `${Math.round(distance)} m`;
+    
+    const bubble = document.getElementById('nav-bubble');
+    
+    // If close to maneuver (less than 50m), show next instruction
+    if (distance < 50 && currentStepIndex < window.navigationSteps.length - 1) {
+      currentStepIndex++;
+      const nextStep = window.navigationSteps[currentStepIndex];
+      showNavigationBubble(nextStep.maneuverType, nextStep.distance);
+      
+      // Highlight current step in list
+      highlightCurrentStep(currentStepIndex);
+    } else {
+      // Update distance to current instruction in real-time
+      if (bubble.classList.contains('active')) {
+        document.getElementById('nav-distance').textContent = distanceText;
+      } else {
+        // Show bubble if not visible
+        showNavigationBubble(currentStep.maneuverType, distanceText);
+      }
+    }
+  } else {
+    // Arrived at destination
+    showNavigationBubble('arrive', '0 m');
+    setTimeout(() => {
+      alert(currentLang === 'es' ? '🎉 ¡Has llegado a tu destino!' : '🎉 You have arrived at your destination!');
+      stopLiveNavigation();
+    }, 2000);
+  }
+}
+
+function updateRouteProgress() {
+  // Get all route coordinates from saved data
+  const allCoords = window.originalRouteCoords || [];
+  
+  if (allCoords.length === 0) return;
+  
+  // Find the closest point on the route to user's current position
+  let closestIndex = 0;
+  let minDistance = Infinity;
+  
+  const userPos = completedRouteCoords[completedRouteCoords.length - 1];
+  if (!userPos) return;
+  
+  allCoords.forEach((coord, i) => {
+    const d = calculateDistance(userPos[0], userPos[1], coord[0], coord[1]);
+    if (d < minDistance) {
+      minDistance = d;
+      closestIndex = i;
+    }
+  });
+  
+  // Remove old route layers
+  map.eachLayer(layer => {
+    if (layer instanceof L.Polyline && layer !== routeLine) {
+      map.removeLayer(layer);
+    }
+  });
+  
+  // Split route into completed (gray) and remaining (blue)
+  const completedCoords = allCoords.slice(0, closestIndex + 1);
+  const remainingCoords = allCoords.slice(closestIndex);
+  
+  // Draw completed route in gray
+  if (completedCoords.length > 1) {
+    L.polyline(completedCoords, {
+      color: "#999999",
+      weight: 5,
+      opacity: 0.6,
+      lineJoin: 'round',
+      className: 'completed-route'
+    }).addTo(map);
+  }
+  
+  // Draw remaining route in blue
+  if (remainingCoords.length > 1) {
+    if (routeLine) map.removeLayer(routeLine);
+    routeLine = L.polyline(remainingCoords, {
+      color: "#667eea",
+      weight: 5,
+      opacity: 0.8,
+      lineJoin: 'round',
+      className: 'active-route'
+    }).addTo(map);
+  }
+}
+
+function highlightCurrentStep(index) {
+  const steps = document.querySelectorAll('#route-steps p[data-step-index]');
+  steps.forEach((step, i) => {
+    if (i === index) {
+      step.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+      step.style.color = 'white';
+      step.style.fontWeight = '700';
+    } else if (i < index) {
+      step.style.background = '#e0e0e0';
+      step.style.color = '#999';
+      step.style.textDecoration = 'line-through';
+    } else {
+      step.style.background = 'white';
+      step.style.color = '#333';
+      step.style.textDecoration = 'none';
+      step.style.fontWeight = 'normal';
+    }
+  });
+}
+
+function stopLiveNavigation() {
+  if (navigationWatchId !== null) {
+    navigator.geolocation.clearWatch(navigationWatchId);
+    navigationWatchId = null;
+  }
+  
+  currentStepIndex = 0;
+  completedRouteCoords = [];
+  
+  // Remove all completed route layers (gray lines)
+  map.eachLayer(layer => {
+    if (layer instanceof L.Polyline && layer.options.className === 'completed-route') {
+      map.removeLayer(layer);
+    }
+  });
+  
+  // Restore original full route in blue
+  if (window.originalRouteCoords) {
+    if (routeLine) map.removeLayer(routeLine);
+    routeLine = L.polyline(window.originalRouteCoords, {
+      color: "#667eea",
+      weight: 5,
+      opacity: 0.8,
+      lineJoin: 'round'
+    }).addTo(map);
+  }
+  
+  // Hide bubble
+  document.getElementById('nav-bubble').classList.remove('active');
+  
+  // Reset button
+  const startBtn = document.querySelector('#route-steps button');
+  if (startBtn) {
+    startBtn.innerHTML = '🧭 ' + (currentLang === 'es' ? 'Iniciar Navegación' : 'Start Navigation');
+    startBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    startBtn.onclick = startLiveNavigation;
+  }
+  
+  // Reset step highlights
+  const steps = document.querySelectorAll('#route-steps p[data-step-index]');
+  steps.forEach(step => {
+    step.style.background = 'white';
+    step.style.color = '#333';
+    step.style.textDecoration = 'none';
+    step.style.fontWeight = 'normal';
+  });
+  
+  console.log('Live navigation stopped');
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Earth radius in meters
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // Distance in meters
 }
 
 // MAP TYPE TOGGLE
