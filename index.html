@@ -3670,28 +3670,28 @@ function startLiveNavigation() {
   navigationWatchId = navigator.geolocation.watchPosition(
     updateNavigationPosition,
     (error) => {
-  console.error('Geolocation error:', error);
-  let errorMsg = '';
-  switch(error.code) {
-    case error.PERMISSION_DENIED:
-      errorMsg = currentLang === 'es' ? 'Permiso de ubicación denegado. Activa el GPS en tu navegador.' : 'Location permission denied. Enable GPS in your browser.';
-      break;
-    case error.POSITION_UNAVAILABLE:
-      errorMsg = currentLang === 'es' ? 'Ubicación no disponible. Verifica tu conexión GPS.' : 'Location unavailable. Check your GPS connection.';
-      break;
-    case error.TIMEOUT:
-      errorMsg = currentLang === 'es' ? 'Tiempo de espera agotado. Intenta de nuevo.' : 'Location timeout. Try again.';
-      break;
-    default:
-      errorMsg = currentLang === 'es' ? 'Error obteniendo ubicación.' : 'Error getting location.';
-  }
-  alert(errorMsg);
-  stopLiveNavigation();
+      console.error('Geolocation error:', error);
+      let errorMsg = '';
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          errorMsg = currentLang === 'es' ? 'Permiso de ubicación denegado. Activa el GPS en tu navegador.' : 'Location permission denied. Enable GPS in your browser.';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          errorMsg = currentLang === 'es' ? 'Ubicación no disponible. Verifica tu conexión GPS.' : 'Location unavailable. Check your GPS connection.';
+          break;
+        case error.TIMEOUT:
+          errorMsg = currentLang === 'es' ? 'Tiempo de espera agotado. Intenta de nuevo.' : 'Location timeout. Try again.';
+          break;
+        default:
+          errorMsg = currentLang === 'es' ? 'Error obteniendo ubicación.' : 'Error getting location.';
+      }
+      alert(errorMsg);
+      stopLiveNavigation();
     },
     {
-  enableHighAccuracy: true,
-  timeout: 10000,
-  maximumAge: 1000
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 1000
     }
   );
   
